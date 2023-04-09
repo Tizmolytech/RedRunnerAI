@@ -60,6 +60,14 @@ namespace RedRunner.TerrainGeneration
 			}
 		}
 
+		public Dictionary<Vector3, Block> Blocks
+		{
+			get
+			{
+				return m_Blocks;
+			}
+		}
+
 		public TerrainGenerationSettings Settings
 		{
 			get

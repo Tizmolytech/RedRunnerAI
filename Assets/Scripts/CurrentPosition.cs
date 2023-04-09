@@ -5,16 +5,18 @@ using TMPro;
 using RedRunner.Characters;
 using RedRunner.Enemies;
 using RedRunner.Utilities;
+using RedRunner.TerrainGeneration;
 
 public class CurrentPosition : MonoBehaviour
 {
-    public TextMeshProUGUI printInfo;
-    public Character player;
+    private TextMeshProUGUI printInfo;
+    private Character player;
     private Vector2 previousVelocity;
-    public List<Enemy> detectedEnemies = new List<Enemy>();
-    public float detectionRangeX;
-    public float detectionRangeY;
-    public Camera cam;
+    private List<Enemy> detectedEnemies = new List<Enemy>();
+    private float detectionRangeX;
+    private float detectionRangeY;
+    private Camera cam;
+    private TerrainGenerator terrainGenerator;
 
     void Start()
     {
@@ -22,6 +24,7 @@ public class CurrentPosition : MonoBehaviour
         player = GameObject.Find("RedRunner").GetComponent<Character>();
         previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
+        terrainGenerator = GameObject.Find("Terrain Generator").GetComponent<TerrainGenerator>();
     }
 
     void Update()
@@ -53,15 +56,12 @@ public class CurrentPosition : MonoBehaviour
                 }
             }
         }
+        
+        Block[] allBlocks = GameObject.FindObjectsOfType<Block>();
 
         for (int i = 0; i < detectedEnemies.Count; i++)
         {
             printInfo.text += detectedEnemies[i].GetType().Name + " " + detectedEnemies[i].transform.position + "\n";
-        }
-
-        if (detectedEnemies.Count == 0)
-        {
-            printInfo.text += "No Enemies";
         }
     }
 }
