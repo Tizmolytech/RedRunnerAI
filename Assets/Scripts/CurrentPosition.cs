@@ -19,7 +19,7 @@ public class CurrentPosition : MonoBehaviour
     void Start()
     {
         printInfo = GameObject.Find("Information Text").GetComponent<TextMeshProUGUI>();
-        player = GameObject.FindWithTag("Player").GetComponent<Character>();
+        player = GameObject.Find("RedRunner").GetComponent<Character>();
         previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
     }
