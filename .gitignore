@@ -4,6 +4,8 @@
 /[Bb]uild/
 /[Bb]uilds/
 /Assets/AssetStoreTools*
+TextMesh Pro/
+Red Runner_Data/
 
 # Visual Studio 2015 cache directory
 /.vs/
@@ -22,6 +24,7 @@ ExportedObj/
 *.booproj
 *.svd
 *.pdb
+*.exe
 
 # Unity3D generated meta files
 *.pidb.meta
