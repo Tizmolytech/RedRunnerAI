@@ -56,7 +56,7 @@ public class CurrentPosition : MonoBehaviour
 
         for (int i = 0; i < detectedEnemies.Count; i++)
         {
-            printInfo.text += "Enemy " + i + " Position: " + detectedEnemies[i].transform.position + "\n";
+            printInfo.text += detectedEnemies[i].GetType().Name + " " + detectedEnemies[i].transform.position + "\n";
         }
 
         if (detectedEnemies.Count == 0)
