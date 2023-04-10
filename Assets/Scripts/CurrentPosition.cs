@@ -11,10 +11,12 @@ public class CurrentPosition : MonoBehaviour
     private Character player;
     private Vector2 previousVelocity;
     private Camera cam;
+    private bool isTextVisible = false;
 
     void Start()
     {
         printInfo = GameObject.Find("Information Text").GetComponent<TextMeshProUGUI>();
+        printInfo.enabled = false;
         player = GameObject.Find("RedRunner").GetComponent<Character>();
         previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
@@ -72,6 +74,12 @@ public class CurrentPosition : MonoBehaviour
         for (int i = 0; i < detectedCoins.Count; i++)
         {
             printInfo.text += detectedCoins[i].GetType().Name + " " + ComputePosition(detectedCoins[i]) + "\n";
+        }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            isTextVisible = !isTextVisible;
+            printInfo.enabled = isTextVisible;
         }
     }
 
