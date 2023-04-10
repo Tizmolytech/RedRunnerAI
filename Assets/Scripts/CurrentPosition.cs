@@ -11,6 +11,7 @@ public class CurrentPosition : MonoBehaviour
     private Character player;
     private Vector2 previousVelocity;
     private Camera cam;
+    private Vector2 detectionRange;
 
     void Start()
     {
@@ -18,73 +19,52 @@ public class CurrentPosition : MonoBehaviour
         player = GameObject.Find("RedRunner").GetComponent<Character>();
         previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
+        detectionRange = new Vector2(cam.orthographicSize * cam.aspect, cam.orthographicSize);
     }
 
     void Update()
     {
-        float detectionRangeY = cam.orthographicSize;
-        float detectionRangeX = detectionRangeY * cam.aspect;
-        
         Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
-        Vector2 acceleration = (currentVelocity - previousVelocity) / Time.deltaTime;
-        previousVelocity = currentVelocity;
 
         printInfo.text = "Current Position: (" + player.transform.position.x.ToString("N2") + ", " + player.transform.position.y.ToString("N2") + ")\n" +
         "Current Velocity: " + currentVelocity + "\n" +
-        "Current Acceleration: " + acceleration + "\n";
+        "Current Acceleration: " + (currentVelocity - previousVelocity) / Time.deltaTime + "\n";
 
-        Coin[] allCoins = FindObjectsOfType<Coin>();
-        List<Coin> detectedCoins = new List<Coin>();
+        printObjects(detectObjects(FindObjectsOfType<Coin>()));
 
-        foreach (Coin c in allCoins)
-        {
-            if (c.transform.position.x > cam.transform.position.x - detectionRangeX && c.transform.position.x < cam.transform.position.x + detectionRangeX)
-            {
-                if (c.transform.position.y > cam.transform.position.y - detectionRangeY && c.transform.position.y < cam.transform.position.y + detectionRangeY)
-                {
-                    detectedCoins.Add(c);
-                }
-            }
-        }
-
-        Enemy[] allEnemies = FindObjectsOfType<Enemy>();
-        List<Enemy> detectedEnemies = new List<Enemy>();
-
-        foreach (Enemy e in allEnemies)
-        {
-            Vector3 exts = e.GetComponent<Collider2D>().bounds.extents;
-            
-            if (e.transform.position.x > cam.transform.position.x - detectionRangeX - exts.x && e.transform.position.x < cam.transform.position.x + detectionRangeX + exts.x)
-            {
-                if (e.transform.position.y > cam.transform.position.y - detectionRangeY - exts.y && e.transform.position.y < cam.transform.position.y + detectionRangeY + exts.y)
-                {
-                    detectedEnemies.Add(e);
-                }
-            }
-        }
-
-        for (int i = 0; i < detectedEnemies.Count  ; i++)
-        {
-            Vector4 hitBox = ComputeHitBox(detectedEnemies[i]);
-            printInfo.text += detectedEnemies[i].GetType().Name + " " + ComputePosition(detectedEnemies[i]) + " [(" + hitBox.x.ToString("N2") + ", " + hitBox.y.ToString("N2") + "), (" + hitBox.z.ToString("N2") + ", " + hitBox.w.ToString("N2") + ")]\n";
-        }
-
-        for (int i = 0; i < detectedCoins.Count; i++)
-        {
-            printInfo.text += detectedCoins[i].GetType().Name + " " + ComputePosition(detectedCoins[i]) + "\n";
-        }
+        printObjects(detectObjects(FindObjectsOfType<Enemy>()));
+        previousVelocity = currentVelocity;
     }
 
-    private Vector2 ComputePosition(Component component)
+    private Dictionary<T, Vector4> detectObjects<T>(T[] allObjects) where T : MonoBehaviour
     {
-        return new Vector2(component.transform.position.x, component.transform.position.y);
+        Dictionary<T, Vector4> result = new Dictionary<T, Vector4>();
+
+        foreach (T obj in allObjects)
+        {
+            Vector4 hitBox = ComputeHitBox(obj);
+
+            if (hitBox.z > cam.transform.position.x - detectionRange.x && hitBox.x < cam.transform.position.x + detectionRange.x && hitBox.w > cam.transform.position.y - detectionRange.y && hitBox.y < cam.transform.position.y + detectionRange.y)
+            {
+               result.Add(obj, hitBox);
+            }
+        }
+        
+        return result;
     }
-    
+
+    private void printObjects<T>(Dictionary<T, Vector4> detectedObjects) where T : MonoBehaviour
+    {
+        foreach (KeyValuePair<T, Vector4> entry in detectedObjects)
+        {
+            printInfo.text += entry.Key.GetType().Name + " [(" + entry.Value.x.ToString("N2") + ", " + entry.Value.y.ToString("N2") + "), (" + entry.Value.z.ToString("N2") + ", " + entry.Value.w.ToString("N2") + ")]\n";
+        }
+    }
+
     private Vector4 ComputeHitBox(Component component)
     {
-        Vector2 edges = new Vector2(component.GetComponent<Collider2D>().bounds.extents.x, component.GetComponent<Collider2D>().bounds.extents.y);
-        Vector4 hitBox = new Vector4(component.transform.position.x - edges.x, component.transform.position.y - edges.y, component.transform.position.x + edges.x, component.transform.position.y + edges.y);
+        Vector3 exts = component.GetComponent<Collider2D>().bounds.extents;
 
-        return hitBox;
+        return new Vector4(component.transform.position.x - exts.x, component.transform.position.y - exts.y, component.transform.position.x + exts.x, component.transform.position.y + exts.y);
     }
 }
