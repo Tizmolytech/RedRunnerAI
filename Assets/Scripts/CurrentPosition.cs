@@ -6,6 +6,8 @@ using RedRunner.Characters;
 using RedRunner.Enemies;
 using RedRunner.Utilities;
 using RedRunner.TerrainGeneration;
+using System.ComponentModel;
+using System.Diagnostics;
 
 public class CurrentPosition : MonoBehaviour
 {
@@ -38,7 +40,8 @@ public class CurrentPosition : MonoBehaviour
 
         printInfo.text = "Current Position: " + player.transform.position + "\n" +
         "Current Velocity: " + currentVelocity + "\n" +
-        "Current Acceleration: " + acceleration + "\n";
+        "Current Acceleration: " + acceleration + "\n" +
+        "Current Hitbox: [" + ComputeHitBox(player)[0] + ", " + ComputeHitBox(player)[1] + ", " + ComputeHitBox(player)[2] + ", " + ComputeHitBox(player)[3] + "]\n";
 
         detectedEnemies.Clear();
 
@@ -61,7 +64,42 @@ public class CurrentPosition : MonoBehaviour
 
         for (int i = 0; i < detectedEnemies.Count; i++)
         {
-            printInfo.text += detectedEnemies[i].GetType().Name + " " + detectedEnemies[i].transform.position + "\n";
+            string[] hitBox = ComputeHitBox(detectedEnemies[i]);
+            printInfo.text += detectedEnemies[i].GetType().Name + " " + ComputePosition(detectedEnemies[i]) + " [" + hitBox[0] + ", " + hitBox[1] + ", " + hitBox[2] + ", " + hitBox[3] + "]\n";
+        }
+    }
+
+    private Vector2 ComputePosition(UnityEngine.Component component)
+    {
+        if (component is Character || component is Enemy)
+        {
+            return new Vector2(component.transform.position.x, component.transform.position.y);
+        }
+        else
+        {
+            UnityEngine.Debug.LogError("Component for position is not a Character or Enemy");
+            return Vector2.zero;
+        }
+    }
+
+    private string[] ComputeHitBox(UnityEngine.Component component)
+    {
+        if (component is Character || component is Enemy)
+        {
+            Vector2 edges = new Vector2(component.GetComponent<Collider2D>().bounds.extents.x, component.GetComponent<Collider2D>().bounds.extents.y);
+            string[] hitBox = new string[4];
+
+            hitBox[0] = (component.transform.position.x - edges.x).ToString("0.0");
+            hitBox[1] = (component.transform.position.y - edges.y).ToString("0.0");
+            hitBox[2] = (component.transform.position.x + edges.x).ToString("0.0");
+            hitBox[3] = (component.transform.position.y + edges.y).ToString("0.0");
+
+            return hitBox;
+        }
+        else
+        {
+            UnityEngine.Debug.LogError("Component for hitbox is not a Character or Enemy");
+            return null;
         }
     }
 }
