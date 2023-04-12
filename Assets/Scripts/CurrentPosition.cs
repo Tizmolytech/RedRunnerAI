@@ -1,17 +1,21 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using RedRunner.Characters;
 using RedRunner.Enemies;
 using RedRunner.Collectables;
+using System.Reflection;
 
 public class CurrentPosition : MonoBehaviour
 {
+    private const int hudOffset = 260;
     private TextMeshProUGUI printInfo;
     private Character player;
     private Vector2 previousVelocity;
     private Camera cam;
     private bool isTextVisible = false;
+    private Image image;
 
     void Start()
     {
@@ -20,18 +24,23 @@ public class CurrentPosition : MonoBehaviour
         player = GameObject.Find("RedRunner").GetComponent<Character>();
         previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
+        image = GameObject.Find("Information background").GetComponent<Image>();
+        image.enabled = false;
     }
 
     void Update()
     {
         float detectionRangeY = cam.orthographicSize;
         float detectionRangeX = detectionRangeY * cam.aspect;
+
+        image.rectTransform.anchoredPosition = new Vector2(detectionRangeX - hudOffset, detectionRangeY * 0.5f);
         
         Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
         Vector2 acceleration = (currentVelocity - previousVelocity) / Time.deltaTime;
         previousVelocity = currentVelocity;
 
-        printInfo.text = "Current Position: (" + player.transform.position.x.ToString("N2") + ", " + player.transform.position.y.ToString("N2") + ")\n" +
+        
+        printInfo.text = "<align=\"center\"><u>Information</u></align>\nCurrent Position: (" + player.transform.position.x.ToString("N2") + ", " + player.transform.position.y.ToString("N2") + ")\n" +
         "Current Velocity: " + currentVelocity + "\n" +
         "Current Acceleration: " + acceleration + "\n";
 
@@ -80,6 +89,7 @@ public class CurrentPosition : MonoBehaviour
         {
             isTextVisible = !isTextVisible;
             printInfo.enabled = isTextVisible;
+            image.enabled = isTextVisible;
         }
     }
 
