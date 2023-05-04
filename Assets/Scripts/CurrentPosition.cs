@@ -9,7 +9,7 @@ using System.Reflection;
 
 public class CurrentPosition : MonoBehaviour
 {
-    private const int hudOffset = 260;
+    private const ushort hudOffset = 260;
     private TextMeshProUGUI printInfo;
     private Character player;
     private Vector2 previousVelocity;
