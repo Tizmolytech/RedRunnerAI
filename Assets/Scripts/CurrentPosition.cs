@@ -1,39 +1,55 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using RedRunner.Characters;
 using RedRunner.Enemies;
 using RedRunner.Collectables;
+using System.Reflection;
 
 public class CurrentPosition : MonoBehaviour
 {
+    private const int hudOffset = 260;
     private TextMeshProUGUI printInfo;
     private Character player;
     private Vector2 previousVelocity;
     private Camera cam;
     private Vector2 detectionRange;
+    private bool isTextVisible = false;
+    private UnityEngine.UI.Image image;
 
     void Start()
     {
         printInfo = GameObject.Find("Information Text").GetComponent<TextMeshProUGUI>();
+        printInfo.enabled = isTextVisible;
         player = GameObject.Find("RedRunner").GetComponent<Character>();
         previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         detectionRange = new Vector2(cam.orthographicSize * cam.aspect, cam.orthographicSize);
+        image = GameObject.Find("Information background").GetComponent<Image>();
+        image.enabled = isTextVisible;
+        image.rectTransform.anchoredPosition = new Vector2(detectionRange.x - hudOffset, detectionRange.y * 0.5f);
     }
 
     void Update()
     {
         Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
 
-        printInfo.text = "Current Position: (" + player.transform.position.x.ToString("N2") + ", " + player.transform.position.y.ToString("N2") + ")\n" +
+        
+        printInfo.text = "<align=\"center\"><u>Information</u></align>\nCurrent Position: (" + player.transform.position.x.ToString("N2") + ", " + player.transform.position.y.ToString("N2") + ")\n" +
         "Current Velocity: " + currentVelocity + "\n" +
         "Current Acceleration: " + (currentVelocity - previousVelocity) / Time.deltaTime + "\n";
 
         printObjects(detectObjects(FindObjectsOfType<Coin>()));
-
         printObjects(detectObjects(FindObjectsOfType<Enemy>()));
         previousVelocity = currentVelocity;
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            isTextVisible = !isTextVisible;
+            printInfo.enabled = isTextVisible;
+            image.enabled = isTextVisible;
+        }
     }
 
     private Dictionary<T, Vector4> detectObjects<T>(T[] allObjects) where T : MonoBehaviour
