@@ -23,10 +23,10 @@ public class Neuron
         }
     }
 
-    public double getBias() { return bias; }
-    public double getOuput() { return output; }
-    public List<double> getWeights() { return weights; }
-    public void setBias(double bias) { this.bias = bias; }
-    public void setWeights(List<double> newWeights) { weights = newWeights; }
-    public void setOutput(double output) { this.output = output; }
+    public double GetBias() { return bias; }
+    public double GetOuput() { return output; }
+    public List<double> GetWeights() { return weights; }
+    public void SetBias(double bias) { this.bias = bias; }
+    public void SetWeights(List<double> newWeights) { weights = newWeights; }
+    public void SetOutput(double output) { this.output = output; }
 }

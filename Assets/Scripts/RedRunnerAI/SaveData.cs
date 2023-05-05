@@ -9,7 +9,7 @@ using System.Text;
 **/
 public static class SaveData
 {
-    public static void saveToFile(string fileName, NeuralNetwork neuralNetwork)
+    public static void SaveToFile(string fileName, NeuralNetwork neuralNetwork)
     {
         FileStream fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write);
 
@@ -18,7 +18,7 @@ public static class SaveData
         fs.Close();
     }
 
-    public static NeuralNetwork loadFromFile(string fileName)
+    public static NeuralNetwork LoadFromFile(string fileName)
     {
         FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
 

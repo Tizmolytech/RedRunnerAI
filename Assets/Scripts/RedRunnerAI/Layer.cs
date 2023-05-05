@@ -13,12 +13,12 @@ public class Layer
     {
         neurons = new List<Neuron>();
 
-        for (int i = 0; i < numberNeurons; i++)
+        for (ushort loop = 0; loop < numberNeurons; loop++)
         {
             neurons.Add(new Neuron(numberInputs));
         }
     }
 
-    public List<Neuron> getNeurons() { return neurons; }
-    public int getNumberNeurons() { return neurons.Count; }
+    public List<Neuron> GetNeurons() { return neurons; }
+    public int GetNumberNeurons() { return neurons.Count; }
 }

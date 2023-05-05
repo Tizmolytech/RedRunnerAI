@@ -17,7 +17,7 @@ public class NeuralNetwork
     private const int numberOutputs = 4;
     private int numberHiddenLayers;
     private int numberNeuronsPerHiddenLayer;
-    private int score = 0;
+    private ushort score = 0;
 
     public NeuralNetwork(int numberInputs, int numberHiddenLayers, int numberNeuronsPerHiddenLayer)
     {
@@ -25,14 +25,14 @@ public class NeuralNetwork
         this.numberHiddenLayers = numberHiddenLayers;
         this.numberNeuronsPerHiddenLayer = numberNeuronsPerHiddenLayer;
         layers = new List<Layer>();
-        createNetwork();
+        CreateNetwork();
     }
 
-    private void createNetwork()
+    private void CreateNetwork()
     {
         layers.Add(new Layer(numberNeuronsPerHiddenLayer, numberInputs));
 
-        for (int i = 0; i < numberHiddenLayers - 1; i++)
+        for (int loop = 0; loop < numberHiddenLayers - 1; loop++)
         {
             layers.Add(new Layer(numberNeuronsPerHiddenLayer, numberNeuronsPerHiddenLayer));
         }
@@ -40,12 +40,12 @@ public class NeuralNetwork
         layers.Add(new Layer(numberOutputs, numberNeuronsPerHiddenLayer));
     }
 
-    private double sigmoid(double value)
+    private double Sigmoid(double value)
     {
         return 1 / (1 + Math.Exp(-value));
     }
 
-    public void forward(List<double> inputs)
+    public void Forward(List<double> inputs)
     {
         if (inputs.Count != numberInputs)
         {
@@ -60,33 +60,33 @@ public class NeuralNetwork
             List<double> inputsToLayer = outputs;
             outputs = new List<double>();
 
-            foreach (Neuron neuron in layer.getNeurons())
+            foreach (Neuron neuron in layer.GetNeurons())
             {
                 double sum = 0;
-                neuron.setBias(inputsToLayer[inputsToLayer.Count - 1]);
-                List<double> weights = neuron.getWeights();
+                neuron.SetBias(inputsToLayer[inputsToLayer.Count - 1]);
+                List<double> weights = neuron.GetWeights();
 
                 for (int i = 0; i < weights.Count; i++)
                 {
                     sum += weights[i] * inputsToLayer[i];
                 }
 
-                neuron.setOutput(sigmoid(sum));
-                outputs.Add(neuron.getOuput());
+                neuron.SetOutput(Sigmoid(sum));
+                outputs.Add(neuron.GetOuput());
             }
         }
     }
 
-    public void mutate()
+    public void Mutate()
     {
         Random random = new Random();
 
         foreach (Layer layer in layers)
         {
-            List<Neuron> neurons = layer.getNeurons();
+            List<Neuron> neurons = layer.GetNeurons();
             foreach (Neuron neuron in neurons)
             {
-                List<double> weights = neuron.getWeights();
+                List<double> weights = neuron.GetWeights();
                 for (int i = 0; i < weights.Count; i++)
                 {
                     double weight = weights[i];
@@ -111,24 +111,24 @@ public class NeuralNetwork
                     }
                     weights[i] = weight;
                 }
-                neuron.setWeights(weights);
+                neuron.SetWeights(weights);
             }
         }
     }
 
-    public void displayFinalOuput()
+    public void DisplayFinalOuput()
     {
-        foreach (Neuron neuron in getOutputLayer().getNeurons())
+        foreach (Neuron neuron in GetOutputLayer().GetNeurons())
         {
-            Console.WriteLine(neuron.getOuput());
+            Console.WriteLine(neuron.GetOuput());
         }
     }
 
-    public List<Layer> getLayers() { return layers; }
-    public int getNumberInputs() { return numberInputs; }
-    public int getNumberOutputs() { return numberOutputs; }
-    public int getNumberHiddenLayers() { return numberHiddenLayers; }
-    public int getNumberNeuronsPerHiddenLayer() { return numberNeuronsPerHiddenLayer; }
-    public Layer getOutputLayer() { return layers[layers.Count - 1]; }
-    public int getScore() { return score; }
+    public List<Layer> GetLayers() { return layers; }
+    public int GetNumberInputs() { return numberInputs; }
+    public int GetNumberOutputs() { return numberOutputs; }
+    public int GetNumberHiddenLayers() { return numberHiddenLayers; }
+    public int GetNumberNeuronsPerHiddenLayer() { return numberNeuronsPerHiddenLayer; }
+    public Layer GetOutputLayer() { return layers[layers.Count - 1]; }
+    public ushort GetScore() { return score; }
 }
