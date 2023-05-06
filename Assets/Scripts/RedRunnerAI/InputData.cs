@@ -22,7 +22,7 @@ public class InputData : MonoBehaviour
     private Dictionary<Enemy, Vector4> detectedEnemies;
     private Dictionary<GameObject, Vector4> detectedGround;
     private float smallestObject =1f;
-    private string filePath = "C:\\Users\\mathi\\OneDrive\\Bureau\\grid.txt";
+    private string filePath = Environment.GetEnvironmentVariable("USERPROFILE") + "\\OneDrive\\Bureau\\grid.txt";
 	void Start()
 	{
         player = GameObject.Find("RedRunner").GetComponent<Character>();
@@ -101,53 +101,21 @@ public class InputData : MonoBehaviour
 
         foreach (KeyValuePair<Coin, Vector4> coin in detectedCoins)
         {
-            Vector4 gridPosition = CorrectPosition(new Vector4(coin.Value.x - cam.transform.position.x + detectionRange.x, coin.Value.y - cam.transform.position.y + detectionRange.y, coin.Value.z - cam.transform.position.x + detectionRange.x, coin.Value.w - cam.transform.position.y + detectionRange.y));
-
-            for (byte loopWidth = (byte)Math.Truncate(gridPosition.x); loopWidth < Math.Truncate(gridPosition.z) + 1; loopWidth++)
-            {
-                for (byte loopHeight = (byte)Math.Truncate(gridPosition.y); loopHeight < Math.Truncate(gridPosition.w) + 1; loopHeight++)
-                {
-                    data[loopHeight, loopWidth] = 2;
-                }
-            }
+            FillObjectsInGrid(CorrectPosition(new Vector4(coin.Value.x - cam.transform.position.x + detectionRange.x, coin.Value.y - cam.transform.position.y + detectionRange.y, coin.Value.z - cam.transform.position.x + detectionRange.x, coin.Value.w - cam.transform.position.y + detectionRange.y)), 2);
         }
 
         foreach (KeyValuePair<Enemy, Vector4> enemy in detectedEnemies)
-        {
-            Vector4 gridPosition = CorrectPosition(new Vector4(enemy.Value.x - cam.transform.position.x + detectionRange.x, enemy.Value.y - cam.transform.position.y + detectionRange.y, enemy.Value.z - cam.transform.position.x + detectionRange.x, enemy.Value.w - cam.transform.position.y + detectionRange.y));
-            
-            for (byte loopWidth = (byte)Math.Truncate(gridPosition.x); loopWidth < Math.Truncate(gridPosition.z) + 1; loopWidth++)
-            {
-                for (byte loopHeight = (byte)Math.Truncate(gridPosition.y); loopHeight < Math.Truncate(gridPosition.w) + 1; loopHeight++)
-                {
-                    data[loopHeight, loopWidth] = 1;
-                }
-            }
+        {            
+            FillObjectsInGrid(CorrectPosition(new Vector4(enemy.Value.x - cam.transform.position.x + detectionRange.x, enemy.Value.y - cam.transform.position.y + detectionRange.y, enemy.Value.z - cam.transform.position.x + detectionRange.x, enemy.Value.w - cam.transform.position.y + detectionRange.y)), 1);
         }
 
         foreach (KeyValuePair<GameObject, Vector4> ground in detectedGround)
         {
-            Vector4 gridPosition = CorrectPosition(new Vector4(ground.Value.x - cam.transform.position.x + detectionRange.x, ground.Value.y - cam.transform.position.y + detectionRange.y, ground.Value.z - cam.transform.position.x + detectionRange.x, ground.Value.w - cam.transform.position.y + detectionRange.y));
-            
-            for (byte loopWidth = (byte)Math.Truncate(gridPosition.x); loopWidth < Math.Truncate(gridPosition.z) + 1; loopWidth++)
-            {
-                for (byte loopHeight = (byte)Math.Truncate(gridPosition.y); loopHeight < Math.Truncate(gridPosition.w) + 1; loopHeight++)
-                {
-                    data[loopHeight, loopWidth] = 3;
-                }
-            }
+            FillObjectsInGrid(CorrectPosition(new Vector4(ground.Value.x - cam.transform.position.x + detectionRange.x, ground.Value.y - cam.transform.position.y + detectionRange.y, ground.Value.z - cam.transform.position.x + detectionRange.x, ground.Value.w - cam.transform.position.y + detectionRange.y)), 3);
         }
 
         Vector4 playerPosition = ComputeHitBox(player.GetComponent<Collider2D>());
-        playerPosition = CorrectPosition(new Vector4(playerPosition.x - cam.transform.position.x + detectionRange.x, playerPosition.y - cam.transform.position.y + detectionRange.y, playerPosition.z - cam.transform.position.x + detectionRange.x, playerPosition.w - cam.transform.position.y + detectionRange.y));
-        
-        for (byte loopWidth = (byte)Math.Truncate(playerPosition.x); loopWidth < Math.Truncate(playerPosition.z) + 1; loopWidth++)
-        {
-            for (byte loopHeight = (byte)Math.Truncate(playerPosition.y); loopHeight < Math.Truncate(playerPosition.w) + 1; loopHeight++)
-            {
-                data[loopHeight, loopWidth] = 4;
-            }
-        }
+        FillObjectsInGrid(CorrectPosition(new Vector4(playerPosition.x - cam.transform.position.x + detectionRange.x, playerPosition.y - cam.transform.position.y + detectionRange.y, playerPosition.z - cam.transform.position.x + detectionRange.x, playerPosition.w - cam.transform.position.y + detectionRange.y)), 4);
     }
 
     private void SaveGrid()
@@ -161,6 +129,17 @@ public class InputData : MonoBehaviour
                     writer.Write(data[loopWidth, loopHeight] + " ");
                 }
                 writer.WriteLine();
+            }
+        }
+    }
+
+    private void FillObjectsInGrid(Vector4 position, byte objectType)
+    {
+        for (byte loopWidth = (byte)Math.Truncate(position.x); loopWidth < Math.Truncate(position.z) + 1; loopWidth++)
+        {
+            for (byte loopHeight = (byte)Math.Truncate(position.y); loopHeight < Math.Truncate(position.w) + 1; loopHeight++)
+            {
+                data[loopHeight, loopWidth] = objectType;
             }
         }
     }
