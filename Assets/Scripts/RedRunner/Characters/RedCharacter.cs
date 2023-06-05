@@ -297,8 +297,8 @@ namespace RedRunner.Characters
 				m_CurrentRunSpeed = Mathf.SmoothDamp ( m_Speed.x, m_MaxRunSpeed, ref m_CurrentSmoothVelocity, m_RunSmoothTime );
 			}
 
-			// Input Processing
-			Move ( CrossPlatformInputManager.GetAxis ( "Horizontal" ) );
+
+			Move (CrossPlatformInputManager.GetAxis("Horizontal"));
 			if ( CrossPlatformInputManager.GetButtonDown ( "Jump" ) )
 			{
 				Jump ();

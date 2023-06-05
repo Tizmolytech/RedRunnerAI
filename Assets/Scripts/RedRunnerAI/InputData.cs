@@ -5,6 +5,7 @@ using RedRunner.Collectables;
 using UnityEngine;
 using System.IO;
 using System;
+using RedRunner;
 /**
 * Class to prepare data
 * Data is a grid of the screen and each cell represents an object such as an enemy, a player, a ground block, etc.
@@ -13,7 +14,7 @@ using System;
 **/
 public class InputData : MonoBehaviour
 {
-	private byte[,] data;
+	private int[,] data;
     private Character player;
     private Vector2 previousVelocity;
     private Camera cam;
@@ -22,18 +23,21 @@ public class InputData : MonoBehaviour
     private Dictionary<Enemy, Vector4> detectedEnemies;
     private Dictionary<GameObject, Vector4> detectedGround;
     private float smallestObject =1f;
-    private string filePath = Environment.GetEnvironmentVariable("USERPROFILE") + "\\OneDrive\\Bureau\\grid.txt";
+    private string filePath = Environment.GetEnvironmentVariable("USERPROFILE") + "\\grid.txt";
 	void Start()
 	{
         player = GameObject.Find("RedRunner").GetComponent<Character>();
         previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         detectionRange = new Vector2(cam.orthographicSize * cam.aspect, cam.orthographicSize);
-        data = new byte[Mathf.CeilToInt(2 * detectionRange.y / smallestObject), Mathf.CeilToInt(2 * detectionRange.x / smallestObject)];
+        data = new int[Mathf.CeilToInt(2 * detectionRange.y / smallestObject), Mathf.CeilToInt(2 * detectionRange.x / smallestObject)];
     }
 
 	void Update()
 	{
+        if (!GameManager.Singleton.gameStarted || !GameManager.Singleton.gameRunning)
+            return;
+        
         Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
         previousVelocity = currentVelocity;
 
@@ -162,5 +166,26 @@ public class InputData : MonoBehaviour
                 data[loopWidth, loopHeight] = 0;
             }
         }
+    }
+
+    public int[,] GetDatas()
+    {
+        return data;
+    }
+
+    public int[] GetDatasOneLine()
+    {
+        int[] result = new int[data.GetLength(0) * data.GetLength(1) + 2];
+
+        for (int loopWidth = 0; loopWidth < data.GetLength(0); loopWidth++)
+        {
+            for (int loopHeight = 0; loopHeight < data.GetLength(1); loopHeight++)
+            {
+                result[loopWidth * data.GetLength(1) + loopHeight] = data[loopWidth, loopHeight];
+            }
+        }
+        result[result.Length - 2] = (int)player.Speed.x;
+        result[result.Length - 1] = (int)player.Speed.y;
+        return result;
     }
 }

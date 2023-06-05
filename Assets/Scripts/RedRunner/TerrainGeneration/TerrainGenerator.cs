@@ -44,6 +44,8 @@ namespace RedRunner.TerrainGeneration
 		protected float m_RemoveTime = 0f;
 		protected bool m_Reset = false;
 
+		private static int m_current = 0;
+
 		public float PreviousX
 		{
 			get
@@ -97,6 +99,7 @@ namespace RedRunner.TerrainGeneration
 		protected virtual void Reset ()
 		{
 			m_Reset = true;
+			m_current = 0;
 			RemoveAll ();
 			m_CurrentX = 0f;
 			m_LastBlock = null;
@@ -144,17 +147,17 @@ namespace RedRunner.TerrainGeneration
 				if ( m_GeneratedStartBlocksCount < m_Settings.StartBlocksCount || m_Settings.StartBlocksCount <= 0 )
 				{
 					isStart = true;
-					block = ChooseFrom ( m_Settings.StartBlocks );
+					block = ChooseFrom ( m_Settings.StartBlocks, false );
 				}
 				else if ( m_GeneratedMiddleBlocksCount < m_Settings.MiddleBlocksCount || m_Settings.MiddleBlocksCount <= 0 )
 				{
 					isMiddle = true;
-					block = ChooseFrom ( m_Settings.MiddleBlocks );
+					block = ChooseFrom ( m_Settings.MiddleBlocks, true );
 				}
 				else if ( m_GeneratedEndBlocksCount < m_Settings.EndBlocksCount || m_Settings.EndBlocksCount <= 0 )
 				{
 					isEnd = true;
-					block = ChooseFrom ( m_Settings.EndBlocks );
+					block = ChooseFrom ( m_Settings.EndBlocks, false );
 				}
 				if ( m_LastBlock != null )
 				{
@@ -199,7 +202,7 @@ namespace RedRunner.TerrainGeneration
 					continue;
 				}
 				Vector3 current = new Vector3 ( m_BackgroundLayers [ i ].CurrentX, 0f, 0f );
-				BackgroundBlock block = ( BackgroundBlock )ChooseFrom ( m_BackgroundLayers [ i ].Blocks );
+				BackgroundBlock block = ( BackgroundBlock )ChooseFrom ( m_BackgroundLayers [ i ].Blocks, false );
 				float newX = 0f;
 				if ( m_BackgroundLayers [ i ].LastBlock != null )
 				{
@@ -339,30 +342,39 @@ namespace RedRunner.TerrainGeneration
 			return characterBlock;
 		}
 
-		public static Block ChooseFrom ( Block[] blocks )
+		public static Block ChooseFrom ( Block[] blocks, bool middle )
 		{
 			if ( blocks.Length <= 0 )
 			{
 				return null;
 			}
-			float total = 0;
-			for ( int i = 0; i < blocks.Length; i++ )
+			
+			if (middle)
 			{
-				total += blocks [ i ].Probability;
+                m_current++;
+                if (m_current == 6)
+                    m_current++;
+                return blocks[m_current % blocks.Length];
+            }
+
+			float total = 0;
+			for (int i = 0; i < blocks.Length; i++)
+			{
+				total += blocks[i].Probability;
 			}
 			float randomPoint = Random.value * total;
-			for ( int i = 0; i < blocks.Length; i++ )
+			for (int i = 0; i < blocks.Length; i++)
 			{
-				if ( randomPoint < blocks [ i ].Probability )
+				if (randomPoint < blocks[i].Probability)
 				{
-					return blocks [ i ];
+					return blocks[i];
 				}
 				else
 				{
-					randomPoint -= blocks [ i ].Probability;
+					randomPoint -= blocks[i].Probability;
 				}
 			}
-			return blocks [ blocks.Length - 1 ];
+			return blocks[blocks.Length - 1];
 		}
 
 	}

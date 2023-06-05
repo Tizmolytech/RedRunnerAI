@@ -33,7 +33,7 @@ namespace RedRunner.Utilities
 		[SerializeField]
 		private CameraControl m_ShakeControl;
 		[SerializeField]
-		private float m_FastMoveSpeed = 10f;
+		private float m_FastMoveSpeed = 100f;
 		[SerializeField]
 		private float m_Speed = 1f;
 		private bool m_FastMove = false;
