@@ -27,7 +27,6 @@ public class Manager : MonoBehaviour
     private double fitnessInit = 0;
     private double fitnessMax = 0;
     private InputData inputData;
-    private UIInfosText txt;
 
     void loadGen(int genToLoad)
     {
@@ -62,7 +61,7 @@ public class Manager : MonoBehaviour
         loadGen(getGenToLoad());
         character = GameObject.Find("RedRunner").GetComponent<Character>();
         inputData = GameObject.Find("EventSystem").GetComponent<InputData>();
-        txt = GameObject.Find("Infos Text").GetComponent<UIInfosText>();
+
         for (int i = 0; i < population.Count; i++)
             population[i].mutate();
 
@@ -87,13 +86,13 @@ public class Manager : MonoBehaviour
         double prevFitness = population[idPopulation].Fitness;
         bool clean = true;
 
-        if (Input.GetKeyDown(KeyCode.I))
+        if (Input.GetKey(KeyCode.I))
         {
             ig.drawInfos(population, species, Globals.numberGeneration);
             clean = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.N))
+        if (Input.GetKey(KeyCode.N))
         {
             ig.drawNetwork(population[idPopulation]);
             clean = false;
@@ -131,7 +130,6 @@ public class Manager : MonoBehaviour
         else
             nbFrameStop = 0;
         //double Value = population[idPopulation].Neurons[Globals.NB_INPUTS + Globals.NB_OUTPUTS - 1].Value;
-        txt.text = getLabel() + "\nreset " + nbFrameStop.ToString() + "\n" + getZQSD();
 
         if (character.IsDead.Value)
             RReset();
