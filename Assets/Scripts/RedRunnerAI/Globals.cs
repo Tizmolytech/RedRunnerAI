@@ -5,7 +5,7 @@
     public const int GRID_W = 32;
     public const int MORE_INPUTS = 2;
     public const int NB_INPUTS = GRID_H * GRID_W + MORE_INPUTS; //change by number of values in grid
-    public const int NB_INDIVIDUAL_POPULATION = 100; // number of individuals in a population when created
+    public static int NB_INDIVIDUAL_POPULATION = 100; // number of individuals in a population when created
     public const double PROB_MUTATION_WEIGHT_RESET = 0.25; // probability to reset weight of a connection when mutating
     public const double MUTATION_WEIGHT_ADDED = 0.8; // weight added when mutating
     public const double PROB_MUTATION_WEIGHT = 0.95;
@@ -20,4 +20,5 @@
     public static int numberGeneration = 0;
     public const int NB_FRAME_RESET_BASE = 100;
     public const int NB_FRAME_RESET_PROGRESS = 500;
+    public static Network current;
 }
