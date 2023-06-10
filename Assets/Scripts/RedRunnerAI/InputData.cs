@@ -5,7 +5,6 @@ using RedRunner.Collectables;
 using UnityEngine;
 using System.IO;
 using System;
-using RedRunner;
 /**
 * Class to prepare data
 * Data is a grid of the screen and each cell represents an object such as an enemy, a player, a ground block, etc.
@@ -34,16 +33,7 @@ public class InputData : MonoBehaviour
 
 	void Update()
 	{
-        if (!GameManager.Singleton.gameStarted || !GameManager.Singleton.gameRunning)
-            return;
-        
-        Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
-        previousVelocity = currentVelocity;
 
-        detectedEnemies = DetectObjects(FindObjectsOfType<Enemy>());
-        detectedGround = DetectGround(GameObject.FindGameObjectsWithTag("Ground"));
-        ComputeGrid();
-        SaveGrid();
     }
 
     private Dictionary<T, Vector4> DetectObjects<T>(T[] allObjects) where T : MonoBehaviour
@@ -167,6 +157,14 @@ public class InputData : MonoBehaviour
 
     public int[] GetDatasOneLine()
     {
+        Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
+        previousVelocity = currentVelocity;
+
+        detectedCoins = DetectObjects(FindObjectsOfType<Coin>());
+        detectedEnemies = DetectObjects(FindObjectsOfType<Enemy>());
+        detectedGround = DetectGround(GameObject.FindGameObjectsWithTag("Ground"));
+        ComputeGrid();
+        //SaveGrid();
         int[] result = new int[data.GetLength(0) * data.GetLength(1) + 2];
 
         for (int loopWidth = 0; loopWidth < data.GetLength(0); loopWidth++)

@@ -1,14 +1,9 @@
 using RedRunner;
 using RedRunner.Characters;
-using RedRunner.UI;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using WindowsInput;
-using WindowsInput.Native;
-using static RedRunner.GameManager;
-using static UnityEngine.GraphicsBuffer;
+
 
 /**
  * Class to make work the genetic algorithm, train it, and save the model
@@ -27,10 +22,13 @@ public class Manager : MonoBehaviour
     private double fitnessInit = 0;
     private double fitnessMax = 0;
     private InputData inputData;
+    private UIInfosText txt;
+    private Network testNetwork;
+    private string mode = "train";
 
-    void loadGen(int genToLoad)
+    private void loadGen(int genToLoad)
     {
-        Network network = new Network();
+        testNetwork = new Network();
         
         Globals.numberGeneration = genToLoad;
         if(genToLoad == 0)
@@ -38,13 +36,14 @@ public class Manager : MonoBehaviour
             population = new Population();
             return;
         }
-            
-        network.deserialize(genToLoad);
-        population = new Population(network);
+
+        testNetwork.deserialize(genToLoad);
+        population = new Population(testNetwork);
+        testNetwork.Fitness = 0;
         fitnessMax = population[0].Fitness;
     }
 
-    int getGenToLoad()
+    private int getGenToLoad()
     {
         int genToLoad = 0;
         string path = "genToLoad.txt";
@@ -52,6 +51,8 @@ public class Manager : MonoBehaviour
         {
             string[] lines = File.ReadAllLines(path);
             genToLoad = int.Parse(lines[0]);
+            mode = lines[1];
+            Globals.NB_INDIVIDUAL_POPULATION = int.Parse(lines[2]);
         }
         return genToLoad;
     }
@@ -83,6 +84,23 @@ public class Manager : MonoBehaviour
         if (!GameManager.Singleton.gameStarted || !GameManager.Singleton.gameRunning)
             return;
 
+        if(mode == "test")
+            test();
+        else
+            train();
+    }
+
+    private void test()
+    {
+        testNetwork.update(ref prevPosX, inputData);
+        testNetwork.feedForward();
+        testNetwork.applyOutput();
+
+        txt.text = "Fitness: " + testNetwork.Fitness;
+    }
+
+    private void train()
+    {
         double prevFitness = population[idPopulation].Fitness;
         bool clean = true;
 
@@ -98,7 +116,7 @@ public class Manager : MonoBehaviour
             clean = false;
         }
 
-        if(clean)
+        if (clean)
             ig.clearGraphics();
 
         population[idPopulation].update(ref prevPosX, inputData);
@@ -110,18 +128,18 @@ public class Manager : MonoBehaviour
 
         nbFrames++;
 
-        if(fitnessMax < population[idPopulation].Fitness)
+        if (fitnessMax < population[idPopulation].Fitness)
             fitnessMax = population[idPopulation].Fitness;
 
-        if(prevFitness == population[idPopulation].Fitness)
+        if (prevFitness == population[idPopulation].Fitness)
         {
             nbFrameStop++;
             int nbFramesReset = Globals.NB_FRAME_RESET_BASE;
 
-            if(fitnessInit != population[idPopulation].Fitness && !character.IsDead.Value)
+            if (fitnessInit != population[idPopulation].Fitness && !character.IsDead.Value)
                 nbFramesReset = Globals.NB_FRAME_RESET_PROGRESS;
 
-            if(nbFrameStop > nbFramesReset)
+            if (nbFrameStop > nbFramesReset)
             {
                 RReset();
             }
@@ -143,7 +161,6 @@ public class Manager : MonoBehaviour
         var ingameScreen = UIManager.Singleton.GetUIScreen(UIScreenInfo.IN_GAME_SCREEN);
         UIManager.Singleton.OpenScreen(ingameScreen);
         GameManager.Singleton.StartGame();
-        prevPosX = character.transform.position.x;
         idPopulation++;
         if (idPopulation >= population.Count)
         {
@@ -153,6 +170,8 @@ public class Manager : MonoBehaviour
             nbFrames = 0;
             fitnessInit = 0;
         }
+        character.Reset();
+        prevPosX = character.transform.position.x;
     }
 
     private string getLabel()

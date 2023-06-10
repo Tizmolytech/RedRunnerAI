@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,7 +6,6 @@ using BayatGames.SaveGameFree;
 using BayatGames.SaveGameFree.Serializers;
 
 using RedRunner.Characters;
-using RedRunner.Collectables;
 using RedRunner.TerrainGeneration;
 
 namespace RedRunner

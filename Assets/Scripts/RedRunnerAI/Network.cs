@@ -4,13 +4,10 @@ using System.Linq;
 using System.IO;
 using UnityEngine;
 using RedRunner.Characters;
-using WindowsInput;
-using WindowsInput.Native;
 
 [Serializable]
 public class Network
 {
-    private int frames = 0;
     public double Fitness;
     public Species ParentSpecies;
     public List<Neuron> Neurons;
@@ -198,12 +195,10 @@ public class Network
     public void update(ref double prevPosX, InputData id)
     {
         double posX = GameObject.Find("RedRunner").GetComponent<Character>().transform.position.x;
-        frames++;
         if (posX > prevPosX) //increase fitness if the character goes to the right
         {
-            Fitness += (posX - prevPosX) / frames * 10;
+            Fitness = posX;
             prevPosX = posX;
-            frames = 0;
         }
         int[] input = id.GetDatasOneLine(); //replace by the grid map
 
@@ -238,6 +233,7 @@ public class Network
 
     public void applyOutput()
     {
+        Character player = GameObject.Find("RedRunner").GetComponent<Character>();
         bool[] zqsd = new bool[Globals.NB_OUTPUTS];
 
         for (int i = 0; i < Globals.NB_OUTPUTS; i++)
@@ -246,24 +242,17 @@ public class Network
         if (zqsd[1] && zqsd[3]) //right take over left
             zqsd[1] = false;
 
-        InputSimulator test = new InputSimulator();
-        
-        //simulate inputs
-        if (zqsd[0]) //z
-            test.Keyboard.KeyPress(VirtualKeyCode.VK_Z);
         if (zqsd[1]) //q
-            test.Keyboard.KeyDown(VirtualKeyCode.VK_Q);
+            player.Move(-1f);
         else
-            test.Keyboard.KeyUp(VirtualKeyCode.VK_Q);
+            player.Move(0f);
         if (zqsd[3]) //d
-            test.Keyboard.KeyDown(VirtualKeyCode.VK_D);
+            player.Move(1f);
         else
-            test.Keyboard.KeyUp(VirtualKeyCode.VK_D);
-        //if (zqsd[2]) //s
-            //test.Keyboard.KeyPress(VirtualKeyCode.VK_S);
-
-
-
-
+            player.Move(0f);
+        if (zqsd[0]) //z
+            player.Jump();
+        if (zqsd[2]) //s
+            player.Roll();
     }
 }

@@ -13,7 +13,6 @@ namespace RedRunner.Characters
 	[RequireComponent ( typeof ( Skeleton ) )]
 	public abstract class Character : MonoBehaviour
 	{
-
 		public delegate void DeadHandler ();
 
 		public virtual event DeadHandler OnDead;
@@ -67,6 +66,8 @@ namespace RedRunner.Characters
 		public abstract void Move ( float horizontalAxis );
 
 		public abstract void Jump ();
+
+		public abstract void Roll ();
 
 		public abstract void Die ();
 

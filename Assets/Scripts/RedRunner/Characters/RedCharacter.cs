@@ -1,10 +1,6 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-
-using UnityStandardAssets.CrossPlatformInput;
-
 using RedRunner.Utilities;
 
 namespace RedRunner.Characters
@@ -292,55 +288,13 @@ namespace RedRunner.Characters
 
 			// Speed Calculations
 			m_CurrentRunSpeed = m_RunSpeed;
-			if ( m_Speed.x >= m_RunSpeed )
+            if (m_CurrentSmoothVelocity < 0f)
+                m_CurrentSmoothVelocity = 0f;
+            if ( m_Speed.x >= m_RunSpeed )
 			{
 				m_CurrentRunSpeed = Mathf.SmoothDamp ( m_Speed.x, m_MaxRunSpeed, ref m_CurrentSmoothVelocity, m_RunSmoothTime );
 			}
-
-
-			Move (CrossPlatformInputManager.GetAxis("Horizontal"));
-			if ( CrossPlatformInputManager.GetButtonDown ( "Jump" ) )
-			{
-				Jump ();
-			}
-			if ( IsDead.Value && !m_ClosingEye )
-			{
-				StartCoroutine ( CloseEye () );
-			}
-			if ( CrossPlatformInputManager.GetButtonDown ( "Guard" ) )
-			{
-				m_Guard = !m_Guard;
-			}
-			if ( m_Guard )
-			{
-				if ( CrossPlatformInputManager.GetButtonDown ( "Fire" ) )
-				{
-					m_Animator.SetTrigger ( m_Actions [ m_CurrentActionIndex ] );
-					if ( m_CurrentActionIndex < m_Actions.Length - 1 )
-					{
-						m_CurrentActionIndex++;
-					}
-					else
-					{
-						m_CurrentActionIndex = 0;
-					}
-				}
-			}
-
-			if ( Input.GetButtonDown ( "Roll" ) )
-			{
-				Vector2 force = new Vector2 ( 0f, 0f );
-				if ( transform.localScale.z > 0f )
-				{
-					force.x = m_RollForce;
-				}
-				else if ( transform.localScale.z < 0f )
-				{
-					force.x = -m_RollForce;
-				}
-				m_Rigidbody2D.AddForce ( force );
-			}
-		}
+        }
 
 		void LateUpdate ()
 		{
@@ -407,11 +361,25 @@ namespace RedRunner.Characters
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region Public Methods
+        #region Public Methods
 
-		public virtual void PlayFootstepSound ()
+        public override void Roll()
+        {
+            Vector2 force = new Vector2(0f, 0f);
+            if (transform.localScale.z > 0f)
+            {
+                force.x = m_RollForce;
+            }
+            else if (transform.localScale.z < 0f)
+            {
+                force.x = -m_RollForce;
+            }
+            m_Rigidbody2D.AddForce(force);
+        }
+
+        public virtual void PlayFootstepSound ()
 		{
 			if ( m_GroundCheck.IsGrounded )
 			{
@@ -421,7 +389,14 @@ namespace RedRunner.Characters
 
 		public override void Move ( float horizontalAxis )
 		{
-			if ( !IsDead.Value )
+			if(m_CurrentSmoothVelocity < 0f)
+				m_CurrentSmoothVelocity = 0f;
+            if (m_Speed.x >= m_RunSpeed)
+            {
+                m_CurrentRunSpeed = Mathf.SmoothDamp(m_Speed.x, m_MaxRunSpeed, ref m_CurrentSmoothVelocity, m_RunSmoothTime);
+            }
+
+            if ( !IsDead.Value )
 			{
 				float speed = m_CurrentRunSpeed;
 //				if ( CrossPlatformInputManager.GetButton ( "Walk" ) )
@@ -502,6 +477,7 @@ namespace RedRunner.Characters
 			m_Block = false;
 			m_CurrentFootstepSoundIndex = 0;
 			transform.localScale = m_InitialScale;
+			m_CurrentRunSpeed = 0f;
 			m_Rigidbody2D.velocity = Vector2.zero;
 			m_Skeleton.SetActive ( false, m_Rigidbody2D.velocity );
 		}
