@@ -22,7 +22,6 @@ public class Manager : MonoBehaviour
     private double fitnessInit = 0;
     private double fitnessMax = 0;
     private InputData inputData;
-    private UIInfosText txt;
     private Network testNetwork;
     private string mode = "train";
 
@@ -95,8 +94,6 @@ public class Manager : MonoBehaviour
         testNetwork.update(ref prevPosX, inputData);
         testNetwork.feedForward();
         testNetwork.applyOutput();
-
-        txt.text = "Fitness: " + testNetwork.Fitness;
     }
 
     private void train()

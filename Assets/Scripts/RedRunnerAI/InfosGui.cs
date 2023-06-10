@@ -31,6 +31,7 @@ public class InfosGui : MonoBehaviour
             initializeObjects();
             drawWindow();
             drawInputNeurons(n);
+            drawInputSpeedNeurons(n);
             drawHiddenNeurons(n);
             drawOutputNeurons(n);
             drawConnections(n);
@@ -59,7 +60,7 @@ public class InfosGui : MonoBehaviour
 
             content.text = text;
 
-            content.color = Color.red;
+            content.color = Color.black;
             content.fontSize = 18;
         }
     }
@@ -200,7 +201,7 @@ public class InfosGui : MonoBehaviour
     {
         foreach(KeyValuePair<Neuron, GameObject> neurony in neuronRenderers)
         {
-            if (neurony.Key.Type == "input")
+            if (neurony.Key.Id >= 1 && neurony.Key.Id < Globals.GRID_H * Globals.GRID_W)
             {
                 neurony.Value.GetComponent<LineRenderer>().startColor = getInputColor(neurony.Key.Value);
                 neurony.Value.GetComponent<LineRenderer>().endColor = getInputColor(neurony.Key.Value);
@@ -215,7 +216,7 @@ public class InfosGui : MonoBehaviour
 
     private void drawHiddenNeurons(Network network)
     {
-        int numberHiddenNeurons = network.Neurons.Count - Globals.GRID_W * Globals.GRID_H - Globals.NB_OUTPUTS;
+        int numberHiddenNeurons = Globals.NB_INPUTS + Globals.NB_OUTPUTS;
 
         float startX = 0f;
         float startY = -50f;
@@ -225,15 +226,14 @@ public class InfosGui : MonoBehaviour
 
         uint neuronsPerLine = 20;
 
-        int neuronIndex = Globals.GRID_W * Globals.GRID_H;
+        int neuronIndex = numberHiddenNeurons;
 
-        for (uint i = 0; i < numberHiddenNeurons; i++)
+        for (uint i = 0; i < network.Neurons.Count - numberHiddenNeurons; i++)
         {
             uint lineIndex = i / neuronsPerLine;
             uint columnIndex = i % neuronsPerLine;
 
             drawNeuron(startY + lineIndex * neuronSpacingY, startX - columnIndex * neuronSpacingX, network.Neurons[neuronIndex]);
-
             neuronIndex++;
         }
     }
@@ -245,11 +245,27 @@ public class InfosGui : MonoBehaviour
 
         byte neuronSpacingX = 10;
 
-        int neuronIndex = network.Neurons.Count - Globals.NB_OUTPUTS;
+        int neuronIndex = Globals.NB_INPUTS;
 
         for (byte x = 0; x < Globals.NB_OUTPUTS; x++)
         {
             drawNeuron(startY, startX + x * neuronSpacingX, network.Neurons[neuronIndex]);
+            neuronIndex++;
+        }
+    }
+
+    private void drawInputSpeedNeurons(Network network)
+    {
+        float startX = -100f;
+        float startY = -300f;
+
+        float neuronSpacingY = 10f;
+
+        int neuronIndex = Globals.GRID_H * Globals.GRID_W;
+
+        for (byte x = 0; x < Globals.MORE_INPUTS; x++)
+        {
+            drawNeuron(startY, startX + x * neuronSpacingY, network.Neurons[neuronIndex]);
             neuronIndex++;
         }
     }

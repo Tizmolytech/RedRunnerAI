@@ -160,7 +160,6 @@ public class InputData : MonoBehaviour
         Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
         previousVelocity = currentVelocity;
 
-        detectedCoins = DetectObjects(FindObjectsOfType<Coin>());
         detectedEnemies = DetectObjects(FindObjectsOfType<Enemy>());
         detectedGround = DetectGround(GameObject.FindGameObjectsWithTag("Ground"));
         ComputeGrid();
