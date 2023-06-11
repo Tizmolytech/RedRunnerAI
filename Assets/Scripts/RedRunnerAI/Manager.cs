@@ -12,9 +12,8 @@ public class Manager : MonoBehaviour
 {
     private Population population;
     private List<Species> species;
-    private AllPops allPops = new AllPops();
     private int idPopulation = 0;
-    private InfosGui ig = new InfosGui();
+    //private InfosGui ig;
     private double prevPosX = 0;
     private Character character;
     private int nbFrames = 0;
@@ -38,9 +37,11 @@ public class Manager : MonoBehaviour
         }
 
         testNetwork.deserialize(genToLoad);
-        population = new Population(testNetwork);
+        AllPops.bestNetwork = new Network(testNetwork);
+        population = new Population();
+        population.deserialize(genToLoad);
+        fitnessMax = testNetwork.Fitness;
         testNetwork.Fitness = 0;
-        fitnessMax = population[0].Fitness;
     }
 
     private int getGenToLoad()
@@ -59,6 +60,7 @@ public class Manager : MonoBehaviour
 
     void Start()
     {
+        Application.targetFrameRate = 30;
         loadGen(getGenToLoad());
         character = GameObject.Find("RedRunner").GetComponent<Character>();
         inputData = GameObject.Find("EventSystem").GetComponent<InputData>();
@@ -74,7 +76,7 @@ public class Manager : MonoBehaviour
 
         species = population.sortPopulation();
 
-        population = allPops.newGeneration(population, ref species);
+        population = AllPops.newGeneration(population, ref species);
 
         prevPosX = character.transform.position.x;
     }
@@ -84,7 +86,7 @@ public class Manager : MonoBehaviour
         if (!GameManager.Singleton.gameStarted || !GameManager.Singleton.gameRunning)
             return;
 
-        if(mode == "test")
+        if (mode == "test")
             test();
         else
             train();
@@ -104,20 +106,20 @@ public class Manager : MonoBehaviour
         double prevFitness = population[idPopulation].Fitness;
         bool clean = true;
 
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            ig.drawInfos(population, species, Globals.numberGeneration);
-            clean = false;
-        }
+        //if (Input.GetKeyDown(KeyCode.I))
+        //{
+        //    ig.drawInfos(population, species, Globals.numberGeneration);
+        //    clean = false;
+        //}
 
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            ig.drawNetwork(population[idPopulation]);
-            clean = false;
-        }
+        //if (Input.GetKeyDown(KeyCode.N))
+        //{
+        //    ig.drawNetwork(population[idPopulation]);
+        //    clean = false;
+        //}
 
-        if (clean)
-            ig.clearGraphics();
+        //if (clean)
+        //    ig.clearGraphics();
 
         population[idPopulation].update(ref prevPosX, inputData);
         population[idPopulation].feedForward();
@@ -167,7 +169,7 @@ public class Manager : MonoBehaviour
         {
             idPopulation = 0;
             species = population.sortPopulation();
-            population = allPops.newGeneration(population, ref species);
+            population = AllPops.newGeneration(population, ref species);
             nbFrames = 0;
             fitnessInit = 0;
         }

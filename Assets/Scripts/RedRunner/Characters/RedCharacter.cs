@@ -72,6 +72,9 @@ namespace RedRunner.Characters
 		protected int m_CurrentFootstepSoundIndex = 0;
 		protected Vector3 m_InitialScale;
 		protected Vector3 m_InitialPosition;
+		private bool isRolling = false;
+		private int lastJump = 0;
+		private int lastRoll = 0;
 
 		#endregion
 
@@ -294,6 +297,8 @@ namespace RedRunner.Characters
 			{
 				m_CurrentRunSpeed = Mathf.SmoothDamp ( m_Speed.x, m_MaxRunSpeed, ref m_CurrentSmoothVelocity, m_RunSmoothTime );
 			}
+			lastJump++;
+			lastRoll++;
         }
 
 		void LateUpdate ()
@@ -305,9 +310,10 @@ namespace RedRunner.Characters
 			m_Animator.SetBool ( "IsDead", IsDead.Value );
 			m_Animator.SetBool ( "Block", m_Block );
 			m_Animator.SetBool ( "Guard", m_Guard );
-			if ( Input.GetButtonDown ( "Roll" ) )
+			if ( isRolling )
 			{
 				m_Animator.SetTrigger ( "Roll" );
+				isRolling = false;
 			}
 		}
 
@@ -367,6 +373,9 @@ namespace RedRunner.Characters
 
         public override void Roll()
         {
+			if (lastRoll < 15)
+				return;
+			isRolling = true;
             Vector2 force = new Vector2(0f, 0f);
             if (transform.localScale.z > 0f)
             {
@@ -377,6 +386,7 @@ namespace RedRunner.Characters
                 force.x = -m_RollForce;
             }
             m_Rigidbody2D.AddForce(force);
+			lastRoll = 0;
         }
 
         public virtual void PlayFootstepSound ()
@@ -423,6 +433,8 @@ namespace RedRunner.Characters
 
 		public override void Jump ()
 		{
+			if( lastJump < 15 )
+                return;
 			if ( !IsDead.Value )
 			{
 				if ( m_GroundCheck.IsGrounded )
@@ -434,6 +446,7 @@ namespace RedRunner.Characters
 					m_Animator.SetTrigger ( "Jump" );
 					m_JumpParticleSystem.Play ();
 					AudioManager.Singleton.PlayJumpSound ( m_JumpAndGroundedAudioSource );
+					lastJump = 0;
 				}
 			}
 		}

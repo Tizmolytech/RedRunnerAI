@@ -66,13 +66,17 @@ public class Population : List<Network>
             bestNetwork = network;
         }
 
-        return bestNetwork;
+        return new Network(bestNetwork);
     }
 
     public void serialize()
     {
-        string fName = "Pops\\population_" + Globals.numberGeneration.ToString() + ".json"; 
-        string json = JsonUtility.ToJson(this);
+        string json = "";
+        foreach(Network n in this)
+            json += JsonUtility.ToJson(n) + "\n";
+
+        string fName = "Pops\\population_" + Globals.numberGeneration.ToString() + ".json";
+       
 
         File.WriteAllText(fName, json);
     }
@@ -81,15 +85,11 @@ public class Population : List<Network>
     {
         string fName = "Pops\\population_" + idGeneration.ToString() + ".json";
 
-        string json = File.ReadAllText(fName);
-
-        Population? pop = JsonUtility.FromJson<Population>(json);
-
-        if (pop == null) return;
+        string[] jsons = File.ReadAllLines(fName);
 
         Clear();
 
-        foreach(Network n in pop)
-            Add(n);
+        foreach(string json in jsons)
+            Add(JsonUtility.FromJson<Network>(json));
     }
 }

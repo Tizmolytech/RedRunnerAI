@@ -244,9 +244,7 @@ public class Network
 
         if (zqsd[1]) //q
             player.Move(-1f);
-        else
-            player.Move(0f);
-        if (zqsd[3]) //d
+        else if (zqsd[3]) //d
             player.Move(1f);
         else
             player.Move(0f);

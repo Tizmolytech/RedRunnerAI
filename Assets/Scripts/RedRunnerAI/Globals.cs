@@ -18,7 +18,6 @@
     public const int FITNESS_GOAL = 100000;
     public static int numberInnovations = 0;
     public static int numberGeneration = 0;
-    public const int NB_FRAME_RESET_BASE = 100;
-    public const int NB_FRAME_RESET_PROGRESS = 500;
-    public static Network current;
+    public const int NB_FRAME_RESET_BASE = 30;
+    public const int NB_FRAME_RESET_PROGRESS = 100;
 }

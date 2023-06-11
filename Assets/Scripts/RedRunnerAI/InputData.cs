@@ -15,18 +15,15 @@ public class InputData : MonoBehaviour
 {
 	private int[,] data;
     private Character player;
-    private Vector2 previousVelocity;
     private Camera cam;
     private Vector2 detectionRange; 
-    private Dictionary<Coin, Vector4> detectedCoins;
     private Dictionary<Enemy, Vector4> detectedEnemies;
     private Dictionary<GameObject, Vector4> detectedGround;
-    private float smallestObject =1f;
+    private float smallestObject = 1f;
     private string filePath = Environment.GetEnvironmentVariable("USERPROFILE") + "\\grid.txt";
 	void Start()
 	{
         player = GameObject.Find("RedRunner").GetComponent<Character>();
-        previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         detectionRange = new Vector2(cam.orthographicSize * cam.aspect, cam.orthographicSize);
         data = new int[Mathf.CeilToInt(2 * detectionRange.y / smallestObject), Mathf.CeilToInt(2 * detectionRange.x / smallestObject)];
@@ -91,11 +88,6 @@ public class InputData : MonoBehaviour
          * If in the cell, there is the player, the value is 4
         **/
         ResetGrid();
-
-        foreach (KeyValuePair<Coin, Vector4> coin in detectedCoins)
-        {
-            FillObjectsInGrid(CorrectPosition(new Vector4(coin.Value.x - cam.transform.position.x + detectionRange.x, coin.Value.y - cam.transform.position.y + detectionRange.y, coin.Value.z - cam.transform.position.x + detectionRange.x, coin.Value.w - cam.transform.position.y + detectionRange.y)), 2);
-        }
 
         foreach (KeyValuePair<Enemy, Vector4> enemy in detectedEnemies)
         {            
@@ -164,10 +156,6 @@ public class InputData : MonoBehaviour
 
     public int[] GetDatasOneLine()
     {
-        Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
-        previousVelocity = currentVelocity;
-
-        detectedCoins = DetectObjects(FindObjectsOfType<Coin>());
         detectedEnemies = DetectObjects(FindObjectsOfType<Enemy>());
         detectedGround = DetectGround(GameObject.FindGameObjectsWithTag("Ground"));
         ComputeGrid();
