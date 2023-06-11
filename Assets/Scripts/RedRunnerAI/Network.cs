@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using UnityEngine;
 using RedRunner.Characters;
+using System.Data;
 
 [Serializable]
 public class Network
@@ -99,7 +100,7 @@ public class Network
 
                 foreach(Connection con in Connections)
                 {
-                    if(con.Input == nIn.Id && con.Output == nOut.Id)
+                    if((con.Input == nIn.Id && con.Output == nOut.Id) || (con.Input == nOut.Id && con.Output == nIn.Id))
                     {
                         alreadyConnected = true;
                         break;
@@ -142,13 +143,14 @@ public class Network
         {
             if(!con.Active) continue;
 
-            con.Active = false;
+
+            con.On = false;
             Neuron newNeuron = new Neuron((int)Neurons.Count + 1, 1, "hidden");
             addNeuron(newNeuron);
 
             connect(con.Input, newNeuron.Id);
             connect(newNeuron.Id, con.Output);
-
+            con.Active = false;
             break;
         }
     }
@@ -163,6 +165,8 @@ public class Network
             mutateAddNeuron();
         if(random < Globals.PROB_MUTATION_CONNECTION)
             mutateAddConnection();
+
+        Connections = sortConnections(Connections);
     }
 
     //compute new values for neurons
@@ -170,13 +174,11 @@ public class Network
     {
         foreach(Connection con in Connections)
         {
-            if(con.Active)
-            {
-                Neurons[con.Output - 1].Value = 0;
-                con.On = false;
-            }
+            Neurons[con.Output - 1].Value = 0;
+            con.On = false;
         }
 
+        List<Connection> onCos = getOnConnections();
         foreach(Connection con in Connections)
         {
             if(!con.Active) continue;
@@ -190,6 +192,98 @@ public class Network
             else
                 con.On = false;
         }
+    }
+
+    public void purgeConnections()
+    {
+        //check in Connections if two connections have the same input and output
+        //if yes, keep the one with the highest weight
+        List<Connection> conns = new List<Connection>(Connections.Count);
+        HashSet<Tuple<int, int>> connsSet = new HashSet<Tuple<int, int>>(Connections.Count);
+
+        foreach(Connection c in Connections)
+        {
+            Tuple<int, int> pair = Tuple.Create( c.Input, c.Output );
+            if (connsSet.Add(pair))
+                conns.Add(c);
+        }
+
+        Connections = conns;
+
+        foreach(Connection c in Connections)
+        {
+            c.On = false;
+        }
+    }
+
+    private List<Connection> sortConnections(List<Connection> connections)
+    {
+        List<Connection> sortedConnections = new List<Connection>(connections.Count);
+        List<Connection> conns = new List<Connection>(connections.Count);
+        List<int> idOut = new List<int>(connections.Count);
+        foreach (Connection con in connections)
+        {
+            conns.Add(new Connection(con));
+            idOut.Add(con.Output);
+        }
+
+
+        while(conns.Any())
+        {
+            bool addOk = false;
+
+            foreach(Connection con in conns)
+            {
+                Connection c = new Connection(con);
+                int inId = c.Input;
+
+                if(!idOut.Contains(inId) || !c.Active)
+                {
+                    addOk = true;
+                    sortedConnections.Add(c);
+                    conns.Remove(con);
+                    idOut.Remove(c.Output);
+                    break;
+                }
+            }
+
+
+            if(!addOk)
+            {
+                Debug.Log("Impossible to sort connections");
+                File.AppendAllText("log.txt", "\nfailed to sort connections\n");
+                foreach(Connection c in conns)
+                {
+                    Debug.Log(c.Input + " " + c.Output);
+                    File.AppendAllText("log.txt", c.Input + " " + c.Output);
+                }
+                break;
+            }
+        }
+
+        return sortedConnections;
+    }
+
+    private List<Connection> getActiveConnections()
+    {
+        List<Connection> activeConnections = new List<Connection>(Connections.Count);
+        foreach (Connection con in Connections)
+        {
+            if (con.Active)
+                activeConnections.Add(con);
+        }
+        return activeConnections;
+    }
+
+    public List<Connection> getOnConnections()
+    {
+        List<Connection> onConnections = new List<Connection>(Connections.Count);
+        foreach (Connection con in Connections)
+        {
+            if (con.On)
+                onConnections.Add(con);
+        }
+        return onConnections;
     }
 
     public void update(ref double prevPosX, InputData id)
@@ -221,7 +315,7 @@ public class Network
 
         string json = File.ReadAllText(fName);
 
-        Network? network = JsonUtility.FromJson<Network>(json);
+        Network network = JsonUtility.FromJson<Network>(json);
 
         if (network == null) return;
 
@@ -229,6 +323,7 @@ public class Network
         ParentSpecies = network.ParentSpecies;
         Neurons = network.Neurons;
         Connections = network.Connections;
+        purgeConnections();
     }
 
     public void applyOutput()

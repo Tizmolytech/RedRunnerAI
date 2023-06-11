@@ -13,7 +13,7 @@ public class Manager : MonoBehaviour
     private Population population;
     private List<Species> species;
     private int idPopulation = 0;
-    //private InfosGui ig;
+    private InfosGui ig = new InfosGui();
     private double prevPosX = 0;
     private Character character;
     private int nbFrames = 0;
@@ -21,9 +21,10 @@ public class Manager : MonoBehaviour
     private double fitnessInit = 0;
     private double fitnessMax = 0;
     private InputData inputData;
-    private UIInfosText txt;
     private Network testNetwork;
     private string mode = "train";
+    private bool drawInfos = false;
+    private bool drawNetwork = false;
 
     private void loadGen(int genToLoad)
     {
@@ -65,7 +66,7 @@ public class Manager : MonoBehaviour
         loadGen(getGenToLoad());
         character = GameObject.Find("RedRunner").GetComponent<Character>();
         inputData = GameObject.Find("EventSystem").GetComponent<InputData>();
-        txt = GameObject.Find("Infos Text").GetComponent<UIInfosText>();
+
         for (int i = 0; i < population.Count; i++)
             population[i].mutate();
 
@@ -86,13 +87,28 @@ public class Manager : MonoBehaviour
     {
         if (!GameManager.Singleton.gameStarted || !GameManager.Singleton.gameRunning)
             return;
-
-        if (mode == "test")
-            test();
-        else if (mode == "train")
-            train();
-        else
-            play();
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            drawInfos = !drawInfos;
+        }
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            drawNetwork = !drawNetwork;
+        }
+        switch (mode)
+        {
+            case "train":
+                train();
+                break;
+            case "test":
+                test();
+                break;
+            case "play":
+                play();
+                break;
+            default:
+                break;
+        }
     }
 
     private void play()
@@ -112,32 +128,26 @@ public class Manager : MonoBehaviour
 
     private void test()
     {
+        if (drawNetwork)
+            ig.drawNetwork(testNetwork);
+        if (!drawNetwork)
+            ig.clearGraphics();
         testNetwork.update(ref prevPosX, inputData);
         testNetwork.feedForward();
         testNetwork.applyOutput();
-
-        txt.text = "Fitness: " + testNetwork.Fitness;
     }
 
     private void train()
     {
+        if(drawInfos)
+            ig.drawInfos(population, species, Globals.numberGeneration, fitnessMax);
+        if (drawNetwork)
+            ig.drawNetwork(population[idPopulation]);
+        if(!drawInfos && !drawNetwork)
+            ig.clearGraphics();
+
+
         double prevFitness = population[idPopulation].Fitness;
-        bool clean = true;
-
-        //if (Input.GetKeyDown(KeyCode.I))
-        //{
-        //    ig.drawInfos(population, species, Globals.numberGeneration);
-        //    clean = false;
-        //}
-
-        //if (Input.GetKeyDown(KeyCode.N))
-        //{
-        //    ig.drawNetwork(population[idPopulation]);
-        //    clean = false;
-        //}
-
-        //if (clean)
-        //    ig.clearGraphics();
 
         population[idPopulation].update(ref prevPosX, inputData);
         population[idPopulation].feedForward();
@@ -168,7 +178,6 @@ public class Manager : MonoBehaviour
         else
             nbFrameStop = 0;
         //double Value = population[idPopulation].Neurons[Globals.NB_INPUTS + Globals.NB_OUTPUTS - 1].Value;
-        txt.text = getLabel() + "\nreset " + nbFrameStop.ToString() + "\n" + getZQSD();
 
         if (character.IsDead.Value)
             RReset();
@@ -176,6 +185,7 @@ public class Manager : MonoBehaviour
 
     public void RReset()
     {
+        ig.clearGraphics();
         nbFrameStop = 0;
         nbFrames = 0;
         GameManager.Singleton.Reset();

@@ -71,7 +71,7 @@ public class Population : List<Network>
 
     public void serialize()
     {
-        string json = "";
+        string json = Globals.numberInnovations.ToString() + "\n";
         foreach(Network n in this)
             json += JsonUtility.ToJson(n) + "\n";
 
@@ -88,8 +88,14 @@ public class Population : List<Network>
         string[] jsons = File.ReadAllLines(fName);
 
         Clear();
+        Globals.numberInnovations = int.Parse(jsons[0]);
 
-        foreach(string json in jsons)
-            Add(JsonUtility.FromJson<Network>(json));
+
+        for(int i = 1; i < jsons.Length; i++)
+        {
+            Network temp = JsonUtility.FromJson<Network>(jsons[i]);
+            temp.purgeConnections();
+            Add(temp);
+        }
     }
 }

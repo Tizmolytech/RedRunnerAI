@@ -83,24 +83,23 @@ public class InputData : MonoBehaviour
         /**
          * If in the cell, there is nothing, the value is 0
          * If in the cell, there is an enemy, the value is 1
-         * If in the cell, there is a coin, the value is 2
-         * If in the cell, there is a ground block, the value is 3
-         * If in the cell, there is the player, the value is 4
+         * If in the cell, there is a ground block, the value is 2
+         * If in the cell, there is the player, the value is 3
         **/
         ResetGrid();
 
         foreach (KeyValuePair<Enemy, Vector4> enemy in detectedEnemies)
         {            
-            FillObjectsInGrid(CorrectPosition(new Vector4(enemy.Value.x - cam.transform.position.x + detectionRange.x, enemy.Value.y - cam.transform.position.y + detectionRange.y, enemy.Value.z - cam.transform.position.x + detectionRange.x, enemy.Value.w - cam.transform.position.y + detectionRange.y)), 1);
+            FillObjectsInGrid(CorrectPosition(new Vector4(enemy.Value.x - cam.transform.position.x + detectionRange.x, enemy.Value.y - cam.transform.position.y + detectionRange.y, enemy.Value.z - cam.transform.position.x + detectionRange.x, enemy.Value.w - cam.transform.position.y + detectionRange.y)), -1);
         }
 
         foreach (KeyValuePair<GameObject, Vector4> ground in detectedGround)
         {
-            FillObjectsInGrid(CorrectPosition(new Vector4(ground.Value.x - cam.transform.position.x + detectionRange.x, ground.Value.y - cam.transform.position.y + detectionRange.y, ground.Value.z - cam.transform.position.x + detectionRange.x, ground.Value.w - cam.transform.position.y + detectionRange.y)), 3);
+            FillObjectsInGrid(CorrectPosition(new Vector4(ground.Value.x - cam.transform.position.x + detectionRange.x, ground.Value.y - cam.transform.position.y + detectionRange.y, ground.Value.z - cam.transform.position.x + detectionRange.x, ground.Value.w - cam.transform.position.y + detectionRange.y)), 1);
         }
 
         Vector4 playerPosition = ComputeHitBox(player.GetComponent<Collider2D>());
-        FillObjectsInGrid(CorrectPosition(new Vector4(playerPosition.x - cam.transform.position.x + detectionRange.x, playerPosition.y - cam.transform.position.y + detectionRange.y, playerPosition.z - cam.transform.position.x + detectionRange.x, playerPosition.w - cam.transform.position.y + detectionRange.y)), 4);
+        FillObjectsInGrid(CorrectPosition(new Vector4(playerPosition.x - cam.transform.position.x + detectionRange.x, playerPosition.y - cam.transform.position.y + detectionRange.y, playerPosition.z - cam.transform.position.x + detectionRange.x, playerPosition.w - cam.transform.position.y + detectionRange.y)), 2);
     }
 
     private void SaveGrid()
@@ -118,7 +117,7 @@ public class InputData : MonoBehaviour
         }
     }
 
-    private void FillObjectsInGrid(Vector4 position, byte objectType)
+    private void FillObjectsInGrid(Vector4 position, int objectType)
     {
         for (byte loopWidth = (byte)Math.Truncate(position.x); loopWidth < Math.Truncate(position.z) + 1; loopWidth++)
         {
