@@ -33,6 +33,7 @@ public class Manager : MonoBehaviour
         if(genToLoad == 0)
         {
             population = new Population();
+            AllPops.bestNetwork = new Network(testNetwork);
             return;
         }
 
@@ -88,8 +89,25 @@ public class Manager : MonoBehaviour
 
         if (mode == "test")
             test();
-        else
+        else if (mode == "train")
             train();
+        else
+            play();
+    }
+
+    private void play()
+    {
+        inputData.GetDatasOneLine();
+        if (Input.GetAxis("Horizontal") < 0f) //q
+            character.Move(-1f);
+        else if (Input.GetAxis("Horizontal") > 0f) //d
+            character.Move(1f);
+        else
+            character.Move(0f);
+        if (Input.GetKeyDown(KeyCode.W)) //z
+            character.Jump();
+        if (Input.GetKeyDown(KeyCode.S)) //s
+            character.Roll();
     }
 
     private void test()

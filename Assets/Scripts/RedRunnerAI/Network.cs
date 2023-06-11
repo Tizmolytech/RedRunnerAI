@@ -195,7 +195,7 @@ public class Network
     public void update(ref double prevPosX, InputData id)
     {
         double posX = GameObject.Find("RedRunner").GetComponent<Character>().transform.position.x;
-        if (posX > prevPosX) //increase fitness if the character goes to the right
+        if (posX > prevPosX + 0.1) //increase fitness if the character goes to the right
         {
             Fitness = posX;
             prevPosX = posX;
