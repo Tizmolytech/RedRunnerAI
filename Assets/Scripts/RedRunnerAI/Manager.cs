@@ -144,7 +144,7 @@ public class Manager : MonoBehaviour
     private void train()
     {
         if(drawInfos)
-            ig.drawInfos(population, species, Globals.numberGeneration, fitnessMax);
+            ig.drawInfos(population, species, Globals.numberGeneration, fitnessMax, population[idPopulation], idPopulation);
         if (drawNetwork)
             ig.drawNetwork(population[idPopulation]);
         if(!drawInfos && !drawNetwork)

@@ -11,12 +11,20 @@ public class InfosGui : MonoBehaviour
     private GameObject drawingObject;
     private bool isDrawingInitialized = false; // to check if the drawing has been initialized
     private bool isDrawingInfos = false; // to check if the drawing has been initialized
+    private GameObject outputUp;
+    private GameObject outputDown;
+    private GameObject outputLeft;
+    private GameObject outputRight;
 
     private void initializeObjects()
     {
         drawingObject = GameObject.Find("Drawing");
         neuronRenderers = new Dictionary<int, GameObject>();
         connectionRenderers = new List<GameObject>();
+        outputDown = GameObject.Find("Down");
+        outputUp = GameObject.Find("Up");
+        outputRight = GameObject.Find("Right");
+        outputLeft = GameObject.Find("Left");
 
         windowRenderer = drawingObject.AddComponent<LineRenderer>();
         windowRenderer.material = new Material(Shader.Find("Sprites/Default"));
@@ -36,6 +44,7 @@ public class InfosGui : MonoBehaviour
             drawHiddenNeurons(n);
             drawOutputNeurons(n);
             drawConnections(n);
+            drawOutputKeys();
             isDrawingInitialized = true;
         }
         else
@@ -45,27 +54,26 @@ public class InfosGui : MonoBehaviour
         }
     }
 
-    public void drawInfos(Population pop, List<Species> species, int nbGeneration, double fitnessMax)
+    public void drawInfos(Population pop, List<Species> species, int nbGeneration, double fitnessMax, Network network, int idNetwork)
     {
-        if (!isDrawingInfos)
-        {
-            string text = "";
-            text += "Generation " + nbGeneration.ToString() + "\n";
-            text += "Population " + pop.Count.ToString() + "\n";
-            text += "Species " + species.Count.ToString() + "\n";
-            text += "Fitness max " + fitnessMax.ToString() + "\n";
-            isDrawingInfos = true;
-            GameObject textObject = GameObject.Find("Infos Text");
-            Text content = textObject.GetComponent<Text>();
+        string text = "";
+        text += "Generation " + nbGeneration.ToString() + "\n";
+        text += "Population " + pop.Count.ToString() + "\n";
+        text += "Species " + species.Count.ToString() + "\n";
+        text += "Fitness max " + fitnessMax.ToString() + "\n";
+        text += "Current fitness " + network.Fitness.ToString() + "\n";
+        text += "Current network " + idNetwork.ToString();
+        isDrawingInfos = true;
+        GameObject textObject = GameObject.Find("Infos Text");
+        Text content = textObject.GetComponent<Text>();
 
-            if(content.text != text)
-                content.text = text;
+        if(content.text != text)
+            content.text = text;
 
-            content.color = Color.black;
-            content.fontSize = 18;
-        }
+        content.color = Color.black;
+        content.fontSize = 18;
     }
- 
+
     private void clearInfos()
     {
         GameObject textObject = GameObject.Find("Infos Text");
@@ -91,6 +99,11 @@ public class InfosGui : MonoBehaviour
             }
 
             connectionRenderers.Clear();
+
+            outputUp.GetComponent<Text>().text = "";
+            outputDown.GetComponent<Text>().text = "";
+            outputLeft.GetComponent<Text>().text = "";
+            outputRight.GetComponent<Text>().text = ""; 
 
             isDrawingInitialized = false;
         }
@@ -293,6 +306,42 @@ public class InfosGui : MonoBehaviour
                 connectionRenderers.Add(connectionObject);
             }
         }
+    }
+
+    private void drawOutputUp()
+    {
+        string text = "Up";
+        outputUp.GetComponent<Text>().text = text;
+        outputUp.GetComponent<Text>().color = Color.black;
+    }
+
+    private void drawOutputDown()
+    {
+        string text = "Down";
+        outputDown.GetComponent<Text>().text = text;
+        outputDown.GetComponent<Text>().color = Color.black;
+    }
+
+    private void drawOutputLeft()
+    {
+        string text = "Left";
+        outputLeft.GetComponent<Text>().text = text;
+        outputLeft.GetComponent<Text>().color = Color.black;
+    }
+
+    private void drawOutputRight()
+    {
+        string text = "Right";
+        outputRight.GetComponent<Text>().text = text;
+        outputRight.GetComponent<Text>().color = Color.black;
+    }
+
+    private void drawOutputKeys()
+    {
+        drawOutputDown();
+        drawOutputLeft();
+        drawOutputRight();
+        drawOutputUp();
     }
 
     private void updateConnections(Network network)
