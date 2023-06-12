@@ -148,7 +148,7 @@ public class InfosGui : MonoBehaviour
     private void drawInputNeurons(Network n)    
     {
         float startX = -40f;
-        float startY = -350f;
+        float startY = -390f;
 
         float neuronSpacingX = 5f;
         float neuronSpacingY = 5f;
@@ -218,13 +218,13 @@ public class InfosGui : MonoBehaviour
     {
         int numberHiddenNeurons = Globals.NB_INPUTS + Globals.NB_OUTPUTS;
 
-        float startX = 0f;
-        float startY = -50f;
+        float startX = 200f;
+        float startY = -140f;
 
-        float neuronSpacingX = 10f;
-        float neuronSpacingY = 5f;
+        float neuronSpacingX = 7f;
+        float neuronSpacingY = 7f;
 
-        uint neuronsPerLine = 20;
+        uint neuronsPerLine = 60;
 
         int neuronIndex = numberHiddenNeurons;
 
@@ -241,7 +241,7 @@ public class InfosGui : MonoBehaviour
     private void drawOutputNeurons(Network network)
     {
         float startX = -25f;
-        float startY = 350f;
+        float startY = 375f;
 
         byte neuronSpacingX = 10;
 
