@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class InfosGui : MonoBehaviour
@@ -60,8 +61,9 @@ public class InfosGui : MonoBehaviour
         text += "Population " + pop.Count.ToString() + "\n";
         text += "Species " + species.Count.ToString() + "\n";
         text += "Fitness max " + fitnessMax.ToString() + "\n";
-        text += "Current fitness " + network.Fitness.ToString() + "\n";
-        text += "Current network " + idNetwork.ToString();
+        text += "Current fitness " + network.Fitness.ToString("0.#####") + "\n";
+        text += "Current network " + idNetwork.ToString() + "\n";
+      
         isDrawingInfos = true;
         GameObject textObject = GameObject.Find("Infos Text");
         Text content = textObject.GetComponent<Text>();
@@ -222,25 +224,43 @@ public class InfosGui : MonoBehaviour
 
     private void drawHiddenNeurons(Network network)
     {
-        int numberHiddenNeurons = Globals.NB_INPUTS + Globals.NB_OUTPUTS;
-
         float startX = -50f;
         float startY = -50f;
 
         float neuronSpacingX = 7f;
-        float neuronSpacingY = 7f;
 
-        uint neuronsPerLine = 60;
+        int columnOffset = 0;
 
-        int neuronIndex = numberHiddenNeurons;
+        int count = 1;
 
-        for (uint i = 0; i < network.Neurons.Count - numberHiddenNeurons; i++)
+        HashSet<int> inputs = new HashSet<int>();
+        List<int> outputs = new List<int>();
+        List<Connection> interestingCons = new List<Connection>();
+
+        foreach (Connection connection in network.Connections)
         {
-            uint lineIndex = i / neuronsPerLine;
-            uint columnIndex = i % neuronsPerLine;
+            if (connection.Input > Globals.NB_INPUTS)
+            {
+                inputs.Add(connection.Input);
+                outputs.Add(connection.Output);
+                interestingCons.Add(connection);
+            }
+        }
 
-            drawNeuron(startY + lineIndex * neuronSpacingY, startX - columnIndex * neuronSpacingX, network.Neurons[neuronIndex], 0.2f);
-            neuronIndex++;
+        while (inputs.Count > 0)
+        {
+            foreach (Connection connection in interestingCons)
+            {
+                if (inputs.Contains(connection.Input) && !outputs.Contains(connection.Input))
+                {
+                    drawNeuron(startY + columnOffset, startX + count * neuronSpacingX, network.Neurons[connection.Input - 1], 0.2f);
+                    inputs.Remove(connection.Input);
+                    outputs.Remove(connection.Output);
+                    count++;
+                }
+            }
+            columnOffset += 10;
+            count = 0;
         }
     }
 
