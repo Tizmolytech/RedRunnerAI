@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System;
 
-public class AllPops : List<Population>
+public static class AllPops
 {
-    public Population newGeneration(in Population pop, ref List<Species> sortedSpecies)
+    public static Network bestNetwork;
+    public static Population newGeneration(in Population pop, ref List<Species> sortedSpecies)
     {
         Population newPop = new Population();
         newPop.Clear();
@@ -13,9 +14,10 @@ public class AllPops : List<Population>
 
 
         double fitnessMaxOldPop = 0;
-        Network bestNetwork = pop.getBestNetwork();
+        Network oldBest = new Network(bestNetwork);
+        bestNetwork = pop.getBestNetwork();
         double fitnessMaxPop = bestNetwork.Fitness;
-        Network? oldBest = getOldBest();
+
         if (oldBest != null)
             fitnessMaxOldPop = oldBest.Fitness;
 
@@ -25,7 +27,6 @@ public class AllPops : List<Population>
             bestNetwork = oldBest;
         }
 
-        Add(pop);
         int nbTotalIndividual = 0;
         double globalAverageFitness = 0.0;
         
@@ -85,7 +86,7 @@ public class AllPops : List<Population>
         return newPop;
     }
 
-    private void replaceBadPop(ref List<Species> sortedSpecies, Network oldBest)
+    private static void replaceBadPop(ref List<Species> sortedSpecies, Network oldBest)
     {
         foreach (Species s in sortedSpecies)
         {
@@ -98,24 +99,24 @@ public class AllPops : List<Population>
         Console.WriteLine(oldBest);
     }
 
-    private Network? getOldBest()
-    {
-        if (Count == 0) return null;
+    //private Network? getOldBest()
+    //{
+    //    if (Count == 0) return null;
 
-        double fitnessMaxOldPop = 0;
-        Network? oldBest = null;
+    //    double fitnessMaxOldPop = 0;
+    //    Network? oldBest = null;
 
-        foreach (Population p in this)
-        {
-            foreach (Network n in p)
-            {
-                if (fitnessMaxOldPop > n.Fitness) continue;
+    //    foreach (Population p in this)
+    //    {
+    //        foreach (Network n in p)
+    //        {
+    //            if (fitnessMaxOldPop > n.Fitness) continue;
 
-                fitnessMaxOldPop = n.Fitness;
-                oldBest = n;
-            }
-        }
+    //            fitnessMaxOldPop = n.Fitness;
+    //            oldBest = n;
+    //        }
+    //    }
 
-        return oldBest;
-    }
+    //    return oldBest;
+    //}
 }

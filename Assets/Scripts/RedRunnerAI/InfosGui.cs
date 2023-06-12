@@ -5,17 +5,25 @@ using UnityEngine.UI;
 public class InfosGui : MonoBehaviour
 {
     private LineRenderer windowRenderer;
-    private Dictionary<Neuron, GameObject> neuronRenderers;
-    private Dictionary<Connection, GameObject> connectionRenderers;
+    private Dictionary<int, GameObject> neuronRenderers;
+    private List<GameObject> connectionRenderers;
     private GameObject drawingObject;
     private bool isDrawingInitialized = false; // to check if the drawing has been initialized
     private bool isDrawingInfos = false; // to check if the drawing has been initialized
+    private GameObject outputUp;
+    private GameObject outputDown;
+    private GameObject outputLeft;
+    private GameObject outputRight;
 
     private void initializeObjects()
     {
         drawingObject = GameObject.Find("Drawing");
-        neuronRenderers = new Dictionary<Neuron, GameObject>();
-        connectionRenderers = new Dictionary<Connection, GameObject>();
+        neuronRenderers = new Dictionary<int, GameObject>();
+        connectionRenderers = new List<GameObject>();
+        outputDown = GameObject.Find("Down");
+        outputUp = GameObject.Find("Up");
+        outputRight = GameObject.Find("Right");
+        outputLeft = GameObject.Find("Left");
 
         windowRenderer = drawingObject.AddComponent<LineRenderer>();
         windowRenderer.material = new Material(Shader.Find("Sprites/Default"));
@@ -35,6 +43,7 @@ public class InfosGui : MonoBehaviour
             drawHiddenNeurons(n);
             drawOutputNeurons(n);
             drawConnections(n);
+            drawOutputKeys();
             isDrawingInitialized = true;
         }
         else
@@ -44,27 +53,26 @@ public class InfosGui : MonoBehaviour
         }
     }
 
-    public void drawInfos(Population pop, List<Species> species, int nbGeneration)
+    public void drawInfos(Population pop, List<Species> species, int nbGeneration, double fitnessMax, Network network, int idNetwork)
     {
-        if (!isDrawingInfos)
-        {
-            isDrawingInfos = true;
-            GameObject textObject = GameObject.Find("Infos Text");
-            Text content = textObject.GetComponent<Text>();
+        string text = "";
+        text += "Generation " + nbGeneration.ToString() + "\n";
+        text += "Population " + pop.Count.ToString() + "\n";
+        text += "Species " + species.Count.ToString() + "\n";
+        text += "Fitness max " + fitnessMax.ToString() + "\n";
+        text += "Current fitness " + network.Fitness.ToString() + "\n";
+        text += "Current network " + idNetwork.ToString();
+        isDrawingInfos = true;
+        GameObject textObject = GameObject.Find("Infos Text");
+        Text content = textObject.GetComponent<Text>();
 
-            string text = "";
-            text += "Generation " + nbGeneration.ToString() + "\n";
-            text += "Population " + pop.Count.ToString() + "\n";
-            text += "Species " + species.Count.ToString() + "\n";
-            text += "Fitness max " + pop[0].Fitness.ToString() + "\n";
-
+        if(content.text != text)
             content.text = text;
 
-            content.color = Color.black;
-            content.fontSize = 18;
-        }
+        content.color = Color.black;
+        content.fontSize = 18;
     }
- 
+
     private void clearInfos()
     {
         GameObject textObject = GameObject.Find("Infos Text");
@@ -76,19 +84,25 @@ public class InfosGui : MonoBehaviour
     {
         if (isDrawingInitialized)
         {
-            foreach (KeyValuePair<Neuron, GameObject> entry in neuronRenderers)
+            foreach (KeyValuePair<int, GameObject> entry in neuronRenderers)
             {
                 Destroy(entry.Value);
             }
             neuronRenderers.Clear();
 
             Destroy(windowRenderer);
-
-            foreach(KeyValuePair<Connection, GameObject> entry in connectionRenderers)
+            
+            foreach (GameObject connection in connectionRenderers)
             {
-                Destroy(entry.Value);
+                Destroy(connection);
             }
+
             connectionRenderers.Clear();
+
+            outputUp.GetComponent<Text>().text = "";
+            outputDown.GetComponent<Text>().text = "";
+            outputLeft.GetComponent<Text>().text = "";
+            outputRight.GetComponent<Text>().text = ""; 
 
             isDrawingInitialized = false;
         }
@@ -105,27 +119,19 @@ public class InfosGui : MonoBehaviour
         return neuronValue switch
         {
             0 => Color.white, //Nothing
-            1 => Color.red, //Enemy
-            2 => Color.green, //Block
-            3 => Color.blue, //RedRunner
+            -1 => Color.red, //Enemy
+            1 => Color.green, //Block
+            2 => Color.blue, //RedRunner
             _ => Color.black, //Unknown
         };
     }
 
     private Color getOtherColor(double neuronValue)
     {
-        if (neuronValue < 0)
-        {
+        if (neuronValue < 1)
             return Color.black;
-        }
-        else if (neuronValue == 0)
-        {
-            return Color.white;
-        }
         else
-        {
-            return Color.magenta;
-        }
+            return Color.white;
     }
 
     private void drawWindow()
@@ -159,14 +165,14 @@ public class InfosGui : MonoBehaviour
         {
             for (byte y = 0; y < Globals.GRID_W; y++)
             {
-                drawNeuron(startY + y * neuronSpacingY, startX + x * neuronSpacingX, n.Neurons[neuronIndex]);
+                drawNeuron(startY + y * neuronSpacingY, startX + x * neuronSpacingX, n.Neurons[neuronIndex], 0.2f);
 
                 neuronIndex++;
             }
         }
     }
 
-    private void drawNeuron(float x, float y, Neuron neuron)
+    private void drawNeuron(float x, float y, Neuron neuron, float size)
     {
         GameObject neuronObject = new GameObject("Neuron" + neuron.Id);
         neuronObject.transform.SetParent(GameObject.Find("In-Game Screen").transform, false);
@@ -178,7 +184,7 @@ public class InfosGui : MonoBehaviour
         neuronRenderer.material = new Material(Shader.Find("Sprites/Default"));
         neuronRenderer.positionCount = 2;
         neuronRenderer.SetPosition(0, new Vector3(x, y, 0));
-        neuronRenderer.SetPosition(1, new Vector3(x + 5f, y, 0));
+        neuronRenderer.SetPosition(1, new Vector3(x + 25 * size, y, 0));
         neuronRenderer.sortingOrder = 1;
 
         if (neuron.Type == "input")
@@ -192,24 +198,24 @@ public class InfosGui : MonoBehaviour
             neuronRenderer.endColor = getOtherColor(neuron.Value);
         }
 
-        neuronRenderer.widthMultiplier = 0.2f;
+        neuronRenderer.widthMultiplier = size;
 
-        neuronRenderers.Add(neuron, neuronObject);
+        neuronRenderers.Add(neuron.Id, neuronObject);
     }
 
     private void updateNeuronColors(Network network)
     {
-        foreach(KeyValuePair<Neuron, GameObject> neurony in neuronRenderers)
+        foreach(KeyValuePair<int, GameObject> neurony in neuronRenderers)
         {
-            if (neurony.Key.Id >= 1 && neurony.Key.Id < Globals.GRID_H * Globals.GRID_W)
+            if (neurony.Key >= 1 && neurony.Key < Globals.GRID_H * Globals.GRID_W)
             {
-                neurony.Value.GetComponent<LineRenderer>().startColor = getInputColor(neurony.Key.Value);
-                neurony.Value.GetComponent<LineRenderer>().endColor = getInputColor(neurony.Key.Value);
+                neurony.Value.GetComponent<LineRenderer>().startColor = getInputColor(network.Neurons[neurony.Key - 1].Value);
+                neurony.Value.GetComponent<LineRenderer>().endColor = getInputColor(network.Neurons[neurony.Key - 1].Value);
             }
             else
             {
-                neurony.Value.GetComponent<LineRenderer>().startColor = getOtherColor(neurony.Key.Value);
-                neurony.Value.GetComponent<LineRenderer>().endColor = getOtherColor(neurony.Key.Value);
+                neurony.Value.GetComponent<LineRenderer>().startColor = getOtherColor(network.Neurons[neurony.Key - 1].Value);
+                neurony.Value.GetComponent<LineRenderer>().endColor = getOtherColor(network.Neurons[neurony.Key - 1].Value);
             }
         }
     }
@@ -218,8 +224,8 @@ public class InfosGui : MonoBehaviour
     {
         int numberHiddenNeurons = Globals.NB_INPUTS + Globals.NB_OUTPUTS;
 
-        float startX = 200f;
-        float startY = -140f;
+        float startX = -50f;
+        float startY = -50f;
 
         float neuronSpacingX = 7f;
         float neuronSpacingY = 7f;
@@ -233,7 +239,7 @@ public class InfosGui : MonoBehaviour
             uint lineIndex = i / neuronsPerLine;
             uint columnIndex = i % neuronsPerLine;
 
-            drawNeuron(startY + lineIndex * neuronSpacingY, startX - columnIndex * neuronSpacingX, network.Neurons[neuronIndex]);
+            drawNeuron(startY + lineIndex * neuronSpacingY, startX - columnIndex * neuronSpacingX, network.Neurons[neuronIndex], 0.2f);
             neuronIndex++;
         }
     }
@@ -243,13 +249,13 @@ public class InfosGui : MonoBehaviour
         float startX = -25f;
         float startY = 375f;
 
-        byte neuronSpacingX = 10;
+        byte neuronSpacingX = 25;
 
         int neuronIndex = Globals.NB_INPUTS;
 
         for (byte x = 0; x < Globals.NB_OUTPUTS; x++)
         {
-            drawNeuron(startY, startX + x * neuronSpacingX, network.Neurons[neuronIndex]);
+            drawNeuron(startY, startX + x * neuronSpacingX, network.Neurons[neuronIndex], 0.5f);
             neuronIndex++;
         }
     }
@@ -265,7 +271,7 @@ public class InfosGui : MonoBehaviour
 
         for (byte x = 0; x < Globals.MORE_INPUTS; x++)
         {
-            drawNeuron(startY, startX + x * neuronSpacingY, network.Neurons[neuronIndex]);
+            drawNeuron(startY, startX + x * neuronSpacingY, network.Neurons[neuronIndex], 0.2f);
             neuronIndex++;
         }
     }
@@ -274,8 +280,8 @@ public class InfosGui : MonoBehaviour
     {
         foreach (Connection connection in network.Connections)
         {
-            Neuron fromNeuron = network.Neurons[connection.Input - 1];
-            Neuron toNeuron = network.Neurons[connection.Output - 1];
+            int fromNeuron = connection.Input;
+            int toNeuron = connection.Output;
 
             if (neuronRenderers.ContainsKey(fromNeuron) && neuronRenderers.ContainsKey(toNeuron))
             {
@@ -293,28 +299,72 @@ public class InfosGui : MonoBehaviour
                 connectionRenderer.startColor = new Color(0f, 0f, 0f, 0f);
                 connectionRenderer.endColor = new Color(0f, 0f, 0f, 0f);
                 connectionRenderer.sortingOrder = 2;
-                connectionRenderer.widthMultiplier = 0.15f;
+                connectionRenderer.widthMultiplier = 0.05f;
                 connectionRenderer.SetPosition(0, fromObject.GetComponent<LineRenderer>().GetPosition(0));
                 connectionRenderer.SetPosition(1, toObject.GetComponent<LineRenderer>().GetPosition(0));
 
-                connectionRenderers.Add(connection, connectionObject);
+                connectionRenderers.Add(connectionObject);
             }
         }
     }
 
+    private void drawOutputUp()
+    {
+        string text = "Up";
+        outputUp.GetComponent<Text>().text = text;
+        outputUp.GetComponent<Text>().color = Color.black;
+    }
+
+    private void drawOutputDown()
+    {
+        string text = "Down";
+        outputDown.GetComponent<Text>().text = text;
+        outputDown.GetComponent<Text>().color = Color.black;
+    }
+
+    private void drawOutputLeft()
+    {
+        string text = "Left";
+        outputLeft.GetComponent<Text>().text = text;
+        outputLeft.GetComponent<Text>().color = Color.black;
+    }
+
+    private void drawOutputRight()
+    {
+        string text = "Right";
+        outputRight.GetComponent<Text>().text = text;
+        outputRight.GetComponent<Text>().color = Color.black;
+    }
+
+    private void drawOutputKeys()
+    {
+        drawOutputDown();
+        drawOutputLeft();
+        drawOutputRight();
+        drawOutputUp();
+    }
+
     private void updateConnections(Network network)
     {
-        foreach (KeyValuePair<Connection, GameObject> connection in connectionRenderers)
+        for(int i = 0; i < connectionRenderers.Count; i++)
         {
-            if (connection.Key.On == true)
+            if (network.Connections[i].On)
             {
-                connection.Value.GetComponent<LineRenderer>().startColor = Color.gray;
-                connection.Value.GetComponent<LineRenderer>().endColor = Color.gray;
+                if (network.Connections[i].Weight > 0)
+                {
+                    connectionRenderers[i].GetComponent<LineRenderer>().startColor = Color.white;
+                    connectionRenderers[i].GetComponent<LineRenderer>().endColor = Color.white;
+                }
+                else
+                {
+                    connectionRenderers[i].GetComponent<LineRenderer>().startColor = Color.black;
+                    connectionRenderers[i].GetComponent<LineRenderer>().endColor = Color.black;
+                }
             }
             else
             {
-                connection.Value.GetComponent<LineRenderer>().startColor = new Color(0f, 0f, 0f, 0f);
-                connection.Value.GetComponent<LineRenderer>().endColor = new Color(0f, 0f, 0f, 0f);
+                connectionRenderers[i].GetComponent<LineRenderer>().startColor = new Color(0f, 0f, 0f, 0f);
+                connectionRenderers[i].GetComponent<LineRenderer>().endColor = new Color(0f, 0f, 0f, 0f);
             }
         }
     }

@@ -15,17 +15,15 @@ public class InputData : MonoBehaviour
 {
 	private int[,] data;
     private Character player;
-    private Vector2 previousVelocity;
     private Camera cam;
     private Vector2 detectionRange; 
     private Dictionary<Enemy, Vector4> detectedEnemies;
     private Dictionary<GameObject, Vector4> detectedGround;
-    private float smallestObject =1f;
+    private float smallestObject = 1f;
     private string filePath = Environment.GetEnvironmentVariable("USERPROFILE") + "\\grid.txt";
 	void Start()
 	{
         player = GameObject.Find("RedRunner").GetComponent<Character>();
-        previousVelocity = Vector2.zero;
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         detectionRange = new Vector2(cam.orthographicSize * cam.aspect, cam.orthographicSize);
         data = new int[Mathf.CeilToInt(2 * detectionRange.y / smallestObject), Mathf.CeilToInt(2 * detectionRange.x / smallestObject)];
@@ -92,16 +90,16 @@ public class InputData : MonoBehaviour
 
         foreach (KeyValuePair<Enemy, Vector4> enemy in detectedEnemies)
         {            
-            FillObjectsInGrid(CorrectPosition(new Vector4(enemy.Value.x - cam.transform.position.x + detectionRange.x, enemy.Value.y - cam.transform.position.y + detectionRange.y, enemy.Value.z - cam.transform.position.x + detectionRange.x, enemy.Value.w - cam.transform.position.y + detectionRange.y)), 1);
+            FillObjectsInGrid(CorrectPosition(new Vector4(enemy.Value.x - cam.transform.position.x + detectionRange.x, enemy.Value.y - cam.transform.position.y + detectionRange.y, enemy.Value.z - cam.transform.position.x + detectionRange.x, enemy.Value.w - cam.transform.position.y + detectionRange.y)), -1);
         }
 
         foreach (KeyValuePair<GameObject, Vector4> ground in detectedGround)
         {
-            FillObjectsInGrid(CorrectPosition(new Vector4(ground.Value.x - cam.transform.position.x + detectionRange.x, ground.Value.y - cam.transform.position.y + detectionRange.y, ground.Value.z - cam.transform.position.x + detectionRange.x, ground.Value.w - cam.transform.position.y + detectionRange.y)), 2);
+            FillObjectsInGrid(CorrectPosition(new Vector4(ground.Value.x - cam.transform.position.x + detectionRange.x, ground.Value.y - cam.transform.position.y + detectionRange.y, ground.Value.z - cam.transform.position.x + detectionRange.x, ground.Value.w - cam.transform.position.y + detectionRange.y)), 1);
         }
 
         Vector4 playerPosition = ComputeHitBox(player.GetComponent<Collider2D>());
-        FillObjectsInGrid(CorrectPosition(new Vector4(playerPosition.x - cam.transform.position.x + detectionRange.x, playerPosition.y - cam.transform.position.y + detectionRange.y, playerPosition.z - cam.transform.position.x + detectionRange.x, playerPosition.w - cam.transform.position.y + detectionRange.y)), 3);
+        FillObjectsInGrid(CorrectPosition(new Vector4(playerPosition.x - cam.transform.position.x + detectionRange.x, playerPosition.y - cam.transform.position.y + detectionRange.y, playerPosition.z - cam.transform.position.x + detectionRange.x, playerPosition.w - cam.transform.position.y + detectionRange.y)), 2);
     }
 
     private void SaveGrid()
@@ -119,7 +117,7 @@ public class InputData : MonoBehaviour
         }
     }
 
-    private void FillObjectsInGrid(Vector4 position, byte objectType)
+    private void FillObjectsInGrid(Vector4 position, int objectType)
     {
         for (byte loopWidth = (byte)Math.Truncate(position.x); loopWidth < Math.Truncate(position.z) + 1; loopWidth++)
         {
@@ -157,9 +155,6 @@ public class InputData : MonoBehaviour
 
     public int[] GetDatasOneLine()
     {
-        Vector2 currentVelocity = player.GetComponent<Rigidbody2D>().velocity;
-        previousVelocity = currentVelocity;
-
         detectedEnemies = DetectObjects(FindObjectsOfType<Enemy>());
         detectedGround = DetectGround(GameObject.FindGameObjectsWithTag("Ground"));
         ComputeGrid();
