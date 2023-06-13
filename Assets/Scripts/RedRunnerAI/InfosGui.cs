@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Windows;
 
 public class InfosGui : MonoBehaviour
 {
@@ -194,7 +195,7 @@ public class InfosGui : MonoBehaviour
     {
         foreach(KeyValuePair<int, GameObject> neurony in neuronRenderers)
         {
-            if (neurony.Key >= 1 && neurony.Key < Globals.GRID_H * Globals.GRID_W)
+            if (neurony.Key >= 1 && neurony.Key <= Globals.GRID_H * Globals.GRID_W)
             {
                 neurony.Value.GetComponent<LineRenderer>().startColor = getInputColor(network.Neurons[neurony.Key - 1].Value);
                 neurony.Value.GetComponent<LineRenderer>().endColor = getInputColor(network.Neurons[neurony.Key - 1].Value);
@@ -209,25 +210,24 @@ public class InfosGui : MonoBehaviour
 
     private void drawHiddenNeurons(Network network)
     {
-        int numberHiddenNeurons = Globals.NB_INPUTS + Globals.NB_OUTPUTS;
+        int range = 150;
+        float startX = -100f;
 
-        float startX = -50f;
-        float startY = -50f;
+        float neuronSpacingX = (350f / (network.Neurons.Count - (Globals.NB_INPUTS + Globals.NB_OUTPUTS)));
 
-        float neuronSpacingX = 10f;
-        float neuronSpacingY = 5f;
+        int count = 1;
 
-        uint neuronsPerLine = 20;
+        HashSet<int> drawnInputs = new HashSet<int>();
 
-        int neuronIndex = numberHiddenNeurons;
-
-        for (uint i = 0; i < network.Neurons.Count - numberHiddenNeurons; i++)
+        foreach (Connection connection in network.Connections)
         {
-            uint lineIndex = i / neuronsPerLine;
-            uint columnIndex = i % neuronsPerLine;
+            if (!connection.Active) continue;
+            if (connection.Input <= Globals.NB_INPUTS + Globals.NB_OUTPUTS) continue;
+            if (!drawnInputs.Add(connection.Input)) continue;
 
-            drawNeuron(startY + lineIndex * neuronSpacingY, startX - columnIndex * neuronSpacingX, network.Neurons[neuronIndex], 0.2f);
-            neuronIndex++;
+            int yPos = Random.Range(-150, 150);
+            drawNeuron(startX + count * neuronSpacingX, yPos, network.Neurons[connection.Input - 1], 0.35f);
+            count++;
         }
     }
 
