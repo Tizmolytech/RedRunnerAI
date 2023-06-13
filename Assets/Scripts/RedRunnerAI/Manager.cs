@@ -63,23 +63,27 @@ public class Manager : MonoBehaviour
     void Start()
     {
         Application.targetFrameRate = 30;
-        loadGen(getGenToLoad());
+        int gen = getGenToLoad();
+        loadGen(gen);
         character = GameObject.Find("RedRunner").GetComponent<Character>();
         inputData = GameObject.Find("EventSystem").GetComponent<InputData>();
 
-        for (int i = 0; i < population.Count; i++)
-            population[i].mutate();
-
-        for (int i = 1; i < population.Count; i++)
+        if (gen == 0)
         {
-            population[i] = new Network(population[0]);
-            population[i].mutate();
+            for (int i = 0; i < population.Count; i++)
+                population[i].mutate();
+
+            for (int i = 1; i < population.Count; i++)
+            {
+                population[i] = new Network(population[0]);
+                population[i].mutate();
+            }
         }
-
         species = population.sortPopulation();
-
-        population = AllPops.newGeneration(population, ref species);
-
+        if (gen == 0)
+        {
+            population = AllPops.newGeneration(population, ref species);
+        }
         prevPosX = character.transform.position.x;
     }
 

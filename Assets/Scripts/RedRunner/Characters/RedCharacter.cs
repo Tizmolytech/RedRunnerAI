@@ -437,7 +437,7 @@ namespace RedRunner.Characters
                 return;
 			if ( !IsDead.Value )
 			{
-				if ( m_GroundCheck.IsGrounded )
+				if (m_GroundCheck.IsGrounded)
 				{
 					Vector2 velocity = m_Rigidbody2D.velocity;
 					velocity.y = m_JumpStrength;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using RedRunner.Characters;
+using System.Reflection;
 
 namespace RedRunner.TerrainGeneration
 {
@@ -190,7 +191,10 @@ namespace RedRunner.TerrainGeneration
 							m_GeneratedEndBlocksCount++;
 						}
 					}
-					CreateBlock ( block, current );
+					if(isMiddle)
+                        CreateBlock ( TakeNextBlock(m_Settings.MiddleBlocks), current );
+                    else
+						CreateBlock ( block, current );
 				}
 			}
 			for ( int i = 0; i < m_BackgroundLayers.Length; i++ )
@@ -344,19 +348,6 @@ namespace RedRunner.TerrainGeneration
 
 		public static Block ChooseFrom ( Block[] blocks, bool middle )
 		{
-			if ( blocks.Length <= 0 )
-			{
-				return null;
-			}
-			
-			if (middle)
-			{
-                m_current++;
-                if (m_current == 6)
-                    m_current++;
-                return blocks[m_current % blocks.Length];
-            }
-
 			float total = 0;
 			for (int i = 0; i < blocks.Length; i++)
 			{
@@ -377,6 +368,26 @@ namespace RedRunner.TerrainGeneration
 			return blocks[blocks.Length - 1];
 		}
 
+
+		public static Block TakeNextBlock(Block[] blocks)
+		{
+            if (blocks.Length <= 0)
+            {
+                return null;
+            }
+
+            m_current++;
+            if (m_current >= blocks.Length)
+            {
+                m_current = 0;
+            }
+            if (m_current == 6)
+            {
+                m_current = 7;
+            }
+            Debug.Log(m_current);
+            return blocks[m_current];
+        }
 	}
 
 }
