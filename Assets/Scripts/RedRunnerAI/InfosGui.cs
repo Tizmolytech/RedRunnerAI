@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
+using UnityEngine.Windows;
 
 public class InfosGui : MonoBehaviour
 {
@@ -209,7 +210,7 @@ public class InfosGui : MonoBehaviour
     {
         foreach(KeyValuePair<int, GameObject> neurony in neuronRenderers)
         {
-            if (neurony.Key >= 1 && neurony.Key < Globals.GRID_H * Globals.GRID_W)
+            if (neurony.Key >= 1 && neurony.Key <= Globals.GRID_H * Globals.GRID_W)
             {
                 neurony.Value.GetComponent<LineRenderer>().startColor = getInputColor(network.Neurons[neurony.Key - 1].Value);
                 neurony.Value.GetComponent<LineRenderer>().endColor = getInputColor(network.Neurons[neurony.Key - 1].Value);
@@ -224,43 +225,24 @@ public class InfosGui : MonoBehaviour
 
     private void drawHiddenNeurons(Network network)
     {
-        float startX = -50f;
-        float startY = -50f;
+        int range = 150;
+        float startX = -100f;
 
-        float neuronSpacingX = 7f;
-
-        int columnOffset = 0;
+        float neuronSpacingX = (350f / (network.Neurons.Count - (Globals.NB_INPUTS + Globals.NB_OUTPUTS)));
 
         int count = 1;
 
-        HashSet<int> inputs = new HashSet<int>();
-        List<int> outputs = new List<int>();
-        List<Connection> interestingCons = new List<Connection>();
+        HashSet<int> drawnInputs = new HashSet<int>();
 
         foreach (Connection connection in network.Connections)
         {
-            if (connection.Input > Globals.NB_INPUTS)
-            {
-                inputs.Add(connection.Input);
-                outputs.Add(connection.Output);
-                interestingCons.Add(connection);
-            }
-        }
+            if (!connection.Active) continue;
+            if (connection.Input <= Globals.NB_INPUTS + Globals.NB_OUTPUTS) continue;
+            if (!drawnInputs.Add(connection.Input)) continue;
 
-        while (inputs.Count > 0)
-        {
-            foreach (Connection connection in interestingCons)
-            {
-                if (inputs.Contains(connection.Input) && !outputs.Contains(connection.Input))
-                {
-                    drawNeuron(startY + columnOffset, startX + count * neuronSpacingX, network.Neurons[connection.Input - 1], 0.2f);
-                    inputs.Remove(connection.Input);
-                    outputs.Remove(connection.Output);
-                    count++;
-                }
-            }
-            columnOffset += 10;
-            count = 0;
+            int yPos = Random.Range(-150, 150);
+            drawNeuron(startX + count * neuronSpacingX, yPos, network.Neurons[connection.Input - 1], 0.35f);
+            count++;
         }
     }
 
